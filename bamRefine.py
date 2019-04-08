@@ -21,6 +21,10 @@ def parseBam(bamLine):
 
     return (bamLine, pos, seq)
 
+# Parse snp catalogue
+
+
+
 for bamL in stdin:
     bamL, seq, pos = parseBam(bamL)
     # Find if seq includes SNPs
