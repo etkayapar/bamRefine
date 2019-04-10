@@ -1,4 +1,4 @@
-snp_dist = scan('tmp.txt', what = integer(), sep = '\n')
+snp_dist = scan('1240k_snp_dists.txt', what = integer(), sep = '\n')
 
 log2_d = log2(snp_dist + 1)
 log2_pos = seq(0, 25, 5)
