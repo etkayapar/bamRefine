@@ -14,10 +14,10 @@ def parseSNP_locs(fName):
         curC = snp[0]
         # print("current: %s, chrm: %s" % (curC, chrm))
         try:
-            snps[curC].append(int(snp[2]))
+            snps[curC].append(int(snp[1]))
         except KeyError:
             snps[curC] = []
-            snps[curC].append(int(snp[2]))
+            snps[curC].append(int(snp[1]))
 
     snpF.close()
     return snps
