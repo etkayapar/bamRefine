@@ -33,12 +33,12 @@ def parseSNPs(fName):
     for snp in snpF:
         snp = snp.strip().split()
         curC = snp[0]
-        if curC != chrm:
-            snps[chrm] = tmpS
-            tmpS = []
-            tmpS.append(snp[1:])
-            chrm = curC
-        tmpS.append(snp[1:])
+        # print("current: %s, chrm: %s" % (curC, chrm))
+        try:
+            snps[curC].append(snp[1:])
+        except KeyError:
+            snps[curC] = []
+            snps[curC].append(snp[1:])
 
     snpF.close()
     return snps
