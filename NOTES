@@ -1,1 +1,4 @@
-Consider masking SNPs if its a transition and at the and of reads
+ * Consider masking SNPs if its a transition and at the and of reads
+
+ * Reads that align to the minus strand are shown in reverse complement
+   in the SAM/BAM file.
