@@ -1,0 +1,5 @@
+flagReads	bamRefine.py	/^def flagReads(snpLocDic, bamLine):$/
+isTransition	bamRefine.py	/^def isTransition(ref, bamR):$/
+parseBam	bamRefine.py	/^def parseBam(bamLine):$/
+parseSNPs	bamRefine.py	/^def parseSNPs(fName):$/
+parseSNPs_old	bamRefine.py	/^def parseSNPs_old(fName):$/

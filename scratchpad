@@ -1,0 +1,5 @@
+If the only SNP is a faulty SNP:
+    then discard the read
+else:
+    mask (put N) the faulty SNP
+    
