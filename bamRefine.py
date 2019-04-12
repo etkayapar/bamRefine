@@ -27,14 +27,14 @@ def isTransition(ref, bamR):
 def parseBam(bamL, fields = ('chrm', 'pos', 'seq')):
     bamL = bamL.strip().split()
     allF = {
-        'qname' = bamL[0],
-        'flag' = int(bamL[1]),
-        'chrm' = bamL[2],
-        'pos' = int(bamL[3]),
-        'mapq'= int(bamline[4]),
-        'cigar' = bamL[5],
-        'seq' = bamL[9],
-        'qual' = bamL[10]}
+        'qname': bamL[0],
+        'flag':  int(bamL[1]),
+        'chrm':  bamL[2],
+        'pos':   int(bamL[3]),
+        'mapq':  int(bamL[4]),
+        'cigar': bamL[5],
+        'seq':   bamL[9],
+        'qual':  bamL[10]}
 
     return tuple([allF[f] for f in fields])
 
@@ -113,15 +113,3 @@ def parseSNPs_old(fName):
 
     snpF.close()
     return snps
-
-
-snps = parseSNPs('chr_pos_ref_alt_1240K.all.snp')
-
-with open('../deneme.sam') as sam:
-    for i,l in enumerate(sam):
-        msg = flagReads(snps, parseBam(l))
-        if msg[0]:
-            p = str(i) + '\t' + '\t'.join([str(x) for x in msg[1]])
-            print(p)
-
-
