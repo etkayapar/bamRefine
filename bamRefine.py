@@ -1,6 +1,3 @@
-from sys import stdin
-
-
 def isTransition(ref, bamR):
 
     # table = {
