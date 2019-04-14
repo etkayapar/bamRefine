@@ -33,7 +33,8 @@ def parseBam(bamL, fields = ('chrm', 'pos', 'seq')):
         'seq':   bamL[9],
         'qual':  bamL[10]}
 
-    return tuple([allF[f] for f in fields])
+    # return tuple([allF[f] for f in fields])
+    return allF
 
 # Parse snp catalogue
 
@@ -45,11 +46,14 @@ def flagReads(snpLocDic, bamLine):
     SAM/BAM read contains a SNP.
     '''
 
-    chrm, start, seq = bamLine
+    # chrm, start, seq = bamLine
+    chrm = bamLine['ref_name']
+    start = int(bamLine['ref_pos'])
+    seq = bamLine['seq']
     end = start + len(seq)
-    ref = 1
-    alt = 2
-    lookup = list(range(start, start+11)) + list(range(end-10, end+1))
+    ref = 2
+    alt = 3
+    lookup = list(range(start, start+10)) + list(range(end-9, end))
 
     snpList = [] # store transitions pos. in the ends
 
@@ -57,7 +61,7 @@ def flagReads(snpLocDic, bamLine):
         key = chrm + " " + str(nt)
         try:
             snp = snpLocDic[key]
-            if snp[ref] == seq[nt-start-1]:
+            if snp[ref] == seq[nt-start]:
                 continue
             else:
                 snpList.append(nt-start)
@@ -83,7 +87,7 @@ def parseSNPs(fName):
             # ignoring transversions
             continue
         key = curC + " " + snp[1]
-        snps[key] = snp[1:]
+        snps[key] = snp
     snpF.close()
     return snps
 
@@ -110,3 +114,52 @@ def parseSNPs_old(fName):
 
     snpF.close()
     return snps
+
+
+
+def snpMask(snps, samF):
+
+    faultyReads = {}
+    for snp in snps:
+        crm = snp[0]
+        loc = int(snp[1]) - 1
+        ref = snp[2]
+        alt = snp[3]
+
+        for p_column in samF.pileup(crm, loc, loc+1):
+            if p_column.nsegments > 0:
+                for p_read in p_column.pileups:
+                    if not p_read.is_refskip and not p_read.is_del:
+                        p_alignment = p_read.alignment
+                        readLen = len(p_alignment.query_sequence)
+                        lookup = list(range(10)) + list(range(readLen-11, readLen))
+                        pos = p_read.query_position
+                        var = p_alignment.query_sequence[p_read.query_position] == alt
+                        if var and (pos in lookup):
+                            aln = p_alignment
+                            masked = aln.query_sequence.replace(str(pos),'N')
+                            aln.query_sequence = masked
+                            faultyReads[p_alignment.query_name] = aln
+
+    return faultyReads
+
+def filterBAM(inAln, outAln, faultyReads):
+
+    for read in inAln.fetch():
+        try:
+            outAln.write(faultyReads[read.query_name])
+        except KeyError:
+            outAln.write(read)
+
+
+
+
+
+
+
+
+
+
+
+
+
