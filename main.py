@@ -1,38 +1,43 @@
 from bamRefine import *
 import pysam
 
-## Pseudo ------
-for each snp in snps:
-    get pileups for that pos, if there is a variant and it is
-    at the ends of the read, mask the read, or else skip the read.
+snps = parseSNPs('chr_pos_ref_alt_1240K.all.snp')
+# snps = list(snps.values())
+# snps = snps[:3000]
+
+inBAM = pysam.AlignmentFile('../deneme.bam', 'rb')
+ouBAM = pysam.AlignmentFile('../denemeout.bam', 'wb', template=inBAM)
+
+#fReads = snpMask(snps, inBAM)
+
+#filterBAM(inBAM, ouBAM, fReads)
 
 
-def snpMask(snp, samF):
-
-    crm = snp[0]
-    loc = int(snp[1]) - 1
-    ref = snp[2]
-    alt = snp[3]
-
-    for p_column in samF.pileup(crm, loc, loc+1):
-        for p_read in p_column.pileups:
-            p_alignment = p_read.alignment
-            if p_alignment.query_sequence[p_read.query_position] == alt and
-            p_read.query_position:
-                continue
-
-
-
-
-
-
-
-
-
-
+for read in inBAM.fetch():
+    bamL = read.to_dict()
+    mask, m_pos = flagReads(snps, bamL)
+    if mask == True:
+        for p in m_pos:
+            print('in read %s, position %d' % (bamL['name'], p))
+            t = list(bamL['seq']) ; t[p] = 'N' ; t = "".join(t)
+            bamL['seq'] = t
+        # bamLine --> pysam.AlignedSegment
+        bamL = pysam.AlignedSegment.from_dict(bamL, inBAM.header)
+        ouBAM.write(bamL)
+    else:
+        bamL = pysam.AlignedSegment.from_dict(bamL, inBAM.header)
+        ouBAM.write(bamL)
 
 
 
 
+# with open('maskedReads.txt', 'w') as f:
+#     for r in fReads.keys():
+#         f.write(r + "\n")
 
 
+
+
+
+inBAM.close()
+ouBAM.close()
