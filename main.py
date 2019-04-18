@@ -8,7 +8,7 @@ snps = parseSNPs('chr_pos_ref_alt_1240K.all.snp')
 
 ouName = sys.argv[1] + ".bam"
 
-inBAM = pysam.AlignmentFile('../deneme.bam', 'rb')
+inBAM = pysam.AlignmentFile('deneme.bam', 'rb')
 ouBAM = pysam.AlignmentFile(ouName, 'wb', template=inBAM)
 
 #fReads = snpMask(snps, inBAM)

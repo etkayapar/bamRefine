@@ -1,7 +1,9 @@
 import pysam
 from subprocess import Popen
 
-chrms = range(1,25)
+chrms = [str(x) for x in range(1,23)]
+chrms += ['X', 'Y']
+
 
 procs = []
 for c in chrms:
@@ -14,9 +16,14 @@ while len([x.poll() for x in procs if x.poll() != None]) != len(procs):
 
 print("Merging BAM files...")
 
+with open('toMerge_bamlist.txt', 'w') as f:
+    for c in chrms:
+        f.write(c+'.bam\n')
+
+toMergeF = 'toMerge_bamlist.txt'
 
 
-merge_cmd = "samtools merge -b " + toMerge + " -O BAM merged_out.bam"
+merge_cmd = "samtools merge -b " + toMergeF + " -O BAM -@ 8 merged_out.bam"
 
 merging = Popen([merge_cmd], shell = True)
 
