@@ -1,20 +1,51 @@
+import sys
 import pysam
+import time
 from subprocess import Popen
 
 chrms = [str(x) for x in range(1,23)]
 chrms += ['X', 'Y']
 
+inName = sys.argv[1]
+thread = int(sys.argv[2])
 
-procs = []
-for c in chrms:
-    cmd = "python3 main.py " + c
-    p = Popen([cmd], shell = True)
-    procs.append(p)
+def parallelParse(jobL, n):
+    activeJobs = []
+    jobN = []
+    for i in range(n):
+        c = jobL.pop()
+        cmd = "python3 main.py " + inName + " " + c
+        p = Popen([cmd], shell = True)
+        activeJobs.append(p)
+        jobN.append(c)
+        print('Started job for chr%s' % c)
 
-while len([x.poll() for x in procs if x.poll() != None]) != len(procs):
-    continue
+    while True:
+        time.sleep(3)
+        if len(jobL) == 0:
+            break
+        # get list of all finished processes 
+        finished = [i for i in range(n) if activeJobs[i].poll() != None]
+        n_f = len(finished)
+        if n_f > 0:
+            for i in range(n_f):
+                if len(jobL) == 0:
+                    continue
+                c = jobL.pop() 
+                cmd = "python3 main.py " + inName + " " + c
+                p = Popen([cmd], shell = True)
+                print("Finished job for chr%s" % jobN[i])
+                activeJobs[i] = p
+                jobN[i] = c
 
-print("Merging BAM files...")
+
+jobs = chrms.copy()
+parallelParse(jobs, thread)
+
+time.sleep(3)
+
+
+print("Finished BAM filtering\nMerging BAM files...")
 
 with open('toMerge_bamlist.txt', 'w') as f:
     for c in chrms:
@@ -23,7 +54,7 @@ with open('toMerge_bamlist.txt', 'w') as f:
 toMergeF = 'toMerge_bamlist.txt'
 
 
-merge_cmd = "samtools merge -b " + toMergeF + " -O BAM -@ 8 merged_out.bam"
+merge_cmd = "samtools merge -b " + toMergeF + " -O BAM -@ " + str(thread) +" merged_out.bam"
 
 merging = Popen([merge_cmd], shell = True)
 
