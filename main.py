@@ -2,13 +2,19 @@ import sys
 from bamRefine import *
 import pysam
 
+
+inName = sys.argv[1]
+contig = sys.argv[2]
+
+
+
 snps = parseSNPs('chr_pos_ref_alt_1240K.all.snp')
 # snps = list(snps.values())
 # snps = snps[:3000]
 
-ouName = sys.argv[1] + ".bam"
+ouName = contig + ".bam"
 
-inBAM = pysam.AlignmentFile('deneme.bam', 'rb')
+inBAM = pysam.AlignmentFile(inName, 'rb')
 ouBAM = pysam.AlignmentFile(ouName, 'wb', template=inBAM)
 
 #fReads = snpMask(snps, inBAM)
@@ -16,7 +22,7 @@ ouBAM = pysam.AlignmentFile(ouName, 'wb', template=inBAM)
 #filterBAM(inBAM, ouBAM, fReads)
 
 
-for read in inBAM.fetch(sys.argv[1]):
+for read in inBAM.fetch(contig):
     bamL = read.to_dict()
     mask, m_pos = flagReads(snps, bamL)
     if mask == True:
