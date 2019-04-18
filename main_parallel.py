@@ -1,6 +1,7 @@
 from bamRefine import *
 import pysam
-from multiprocessing import Pool
+import dill
+from pathos.multiprocessing import ProcessingPool
 
 snps = parseSNPs('chr_pos_ref_alt_1240K.all.snp')
 # snps = list(snps.values())
@@ -39,10 +40,10 @@ def filterBAMline(read):
         #ouBAM.write(bamL)
         return bamL
 
-bamF = [read.to_dict() for read in inBAM.fetch()]
+# bamF = [read.to_dict() for read in inBAM.fetch()]
 
-with Pool(2) as p:
-    results = p.map(filterBAMline, bamF, chunksize = 10)
+with ProcessingPool(4) as p:
+    results = p.map(filterBAMline, inBAM.fetch() , chunksize = 50)
 
 print('Finished')
 
