@@ -31,7 +31,7 @@ def parallelParse(jobL, n):
             for i in range(n_f):
                 if len(jobL) == 0:
                     continue
-                c = jobL.pop() 
+                c = jobL.pop()
                 cmd = "python3 main.py " + inName + " " + c
                 p = Popen([cmd], shell = True)
                 print("Finished job for chr%s" % jobN[i])
@@ -54,7 +54,8 @@ with open('toMerge_bamlist.txt', 'w') as f:
 toMergeF = 'toMerge_bamlist.txt'
 
 
-merge_cmd = "samtools merge -b " + toMergeF + " -O BAM -@ " + str(thread) +" merged_out.bam"
+merge_cmd = "samtools merge -b " + toMergeF + " -O BAM -@ "
+merge_cmd += str(thread) +" merged_out.bam"
 
 merging = Popen([merge_cmd], shell = True)
 
