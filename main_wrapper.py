@@ -10,7 +10,10 @@ chrms = [str(x) for x in range(1,23)]
 chrms += ['X', 'Y']
 
 thread = 2
+inName = None
 ouName = 'out.bam'
+
+# Processing command-line options for the program ------------------
 
 options, remainder = getopt.gnu_getopt(sys.argv[1:],
                                        'i:o:p:k',
@@ -26,6 +29,7 @@ for opt, arg in options:
     elif opt in ('-p', '--threads'):
         thread = int(arg)
 
+## ----------------------------------------------------------------
 
 def parallelParse(jobL, n):
     activeJobs = []
