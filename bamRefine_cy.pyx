@@ -1,4 +1,4 @@
-def isTransition(ref, bamR):
+cdef isTransition(str ref,  str bamR):
 
     table = {
         'A': 'G',
@@ -7,7 +7,7 @@ def isTransition(ref, bamR):
         'C': 'T'}
 
     try:
-        if bamR == table[ref]: 
+        if bamR == table[ref]:
             return True
         else:
             return False
@@ -17,38 +17,41 @@ def isTransition(ref, bamR):
 def parseBam(bamL, fields = ('chrm', 'pos', 'seq')):
     bamL = bamL.strip().split()
     allF = {
-        'qname': bamL[0],
+        'qname': bamL[0].encode('utf-8'),
         'flag':  int(bamL[1]),
-        'chrm':  bamL[2],
+        'chrm':  bamL[2].encode('utf-8'),
         'pos':   int(bamL[3]),
         'mapq':  int(bamL[4]),
-        'cigar': bamL[5],
-        'seq':   bamL[9],
-        'qual':  bamL[10]}
+        'cigar': bamL[5].encode('utf-8'),
+        'seq':   bamL[9].encode('utf-8'),
+        'qual':  bamL[10].encode('utf-8')}
 
     # return tuple([allF[f] for f in fields])
     return allF
 
 # Parse snp catalogue
 
-def flagReads(snpLocDic, bamLine):
+cpdef flagReads(snpLocDic, bamLine):
 
     '''
     Find if there is a snp in the loaded SNP catalogue
-    for the given range. It is usally for checking if a 
+    for the given range. It is usally for checking if a
     SAM/BAM read contains a SNP.
     '''
 
     # chrm, start, seq = bamLine
-    chrm = bamLine['ref_name']
-    start = int(bamLine['ref_pos'])
-    seq = bamLine['seq']
-    end = start + len(seq)
-    ref = 2
-    alt = 3
-    lookup = list(range(start, start+10)) + list(range(end-9, end))
+    cdef str chrm = bamLine['ref_name']
+    cdef int start = int(bamLine['ref_pos'])
+    cdef str seq = bamLine['seq']
+    cdef int end = start + len(seq)
+    cdef int ref = 2
+    cdef int alt = 3
+    cdef list lookup = list(range(start, start+10)) + list(range(end-9, end))
+    cdef int nt
+    #cdef str key
+    cdef list snp
 
-    snpList = [] # store transitions pos. in the ends
+    cdef list snpList = [] # store transitions pos. in the ends
 
     for nt in lookup:
         key = chrm + " " + str(nt)
