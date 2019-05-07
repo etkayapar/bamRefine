@@ -1,3 +1,5 @@
+import pysam
+
 cdef isTransition(str ref,  str bamR):
 
     table = {
@@ -148,10 +150,30 @@ def filterBAM(inAln, outAln, faultyReads):
             outAln.write(read)
 
 
+def processBAM(inBAM, ouBAM, snps, contig):
 
+    # cdef dict bamL
+    cdef list m_pos
+    cdef list t
+    cdef str t1
 
+    for read in inBAM.fetch(contig):
+        bamL = read.to_dict()
+        mask, m_pos = flagReads(snps, bamL)
+        if mask == True:
+            for p in m_pos:
+                # print('in read %s, position %d' % (bamL['name'], p))
+                t = list(bamL['seq']) ; t[p] = 'N' ; t1 = "".join(t) ; del(t)
+                bamL['seq'] = t1
+                # bamLine --> pysam.AlignedSegment
+            bamL = pysam.AlignedSegment.from_dict(bamL, inBAM.header)
+            ouBAM.write(bamL)
+        else:
+            bamL = pysam.AlignedSegment.from_dict(bamL, inBAM.header)
+            ouBAM.write(bamL)
 
-
+    inBAM.close()
+    ouBAM.close()
 
 
 
