@@ -12,6 +12,12 @@ import pickle
 
 # Processing command-line options for the program ------------------
 
+## default args
+chrmFname = 'chrms.txt'
+thread = 2
+inName = None
+ouName = 'out.bam'
+
 def usage():
     msg = '''
 Usage: ./bamrefine [options]
@@ -26,7 +32,6 @@ OPTIONS:
 
     print(msg)
     sys.exit()
-
 options, remainder = getopt.gnu_getopt(sys.argv[1:],
                                        'i:s:c:o:p:k',
                                        ['input=',
@@ -45,15 +50,10 @@ for opt, arg in options:
     elif opt in ('-s', '--snps'):
         snpF = arg
     elif opt in ('-c', '--chromosomes'):
-        chrmF = arg
+        chrmFname = arg
     else:
         usage()
 
-## default args
-chrmF = 'chrms.txt'
-thread = 2
-inName = None
-ouName = 'out.bam'
 ## ----------------------------------------------------------------
 
 def parallelParse(jobL, n):
@@ -91,26 +91,8 @@ def parallelParse(jobL, n):
     while len([i for i in range(n) if activeJobs[i].poll() != None]) < len(activeJobs):
         continue
 
-def handleSNPs(fName):
-    pickleName = fName + ".brf"
-    f_exists = os.path.isfile(pickleName)
-    if f_exists:
-        f = open(pickleName, 'rb')
-        snps = pickle.load(f)
-        f.close()
-    else:
-        snps = bamRefine_cy.parseSNPs('chr_pos_ref_alt_1240K.all.snp')
-        f = open(pickleName, 'wb')
-        pickle.dump(snps, f)
-        f.close()
-
-    return snps
-
-
-snps = handleSNPs(snpF)
-
-del(bamRefine_cy)
-
+with open(chrmFname) as chrmF:
+    chrms = [x.strip() for x in chrmF.readlines()]
 
 jobs = chrms.copy()
 parallelParse(jobs, thread)
@@ -133,6 +115,14 @@ merge_cmd += str(thread) + " " +  ouName
 merging = Popen([merge_cmd], shell = True)
 
 while merging.poll() == None:
+    continue
+
+rehead_cmd = "samtools view -H " + inName + " | samtools reheader -P  - " + ouName
+rehead_cmd += " > rehead.bam" + " ; mv rehead.bam " + ouName
+
+reheading = Popen([rehead_cmd], shell = True)
+
+while reheading.poll() == None:
     continue
 
 print("Finished merging.")

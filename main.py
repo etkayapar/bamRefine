@@ -8,7 +8,7 @@ contig = sys.argv[2]
 
 
 
-snps = parseSNPs('chr_pos_ref_alt_1240K.all.snp')
+snps = handleSNPs('chr_pos_ref_alt_1240K.all.snp')
 # snps = list(snps.values())
 # snps = snps[:3000]
 
