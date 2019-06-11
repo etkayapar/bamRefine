@@ -156,6 +156,8 @@ def processBAM(inBAM, ouBAM, snps, contig):
     cdef list m_pos
     cdef list t
     cdef str t1
+    cdef list q
+    cdef str q1
 
     for read in inBAM.fetch(contig):
         bamL = read.to_dict()
@@ -165,6 +167,8 @@ def processBAM(inBAM, ouBAM, snps, contig):
                 # print('in read %s, position %d' % (bamL['name'], p))
                 t = list(bamL['seq']) ; t[p] = 'N' ; t1 = "".join(t) ; del(t)
                 bamL['seq'] = t1
+                q = list(bamL['qual']) ; q[p] = '!' ; q1 = "".join(q) ; del(q)
+                bamL['qual'] = q1
                 # bamLine --> pysam.AlignedSegment
             bamL = pysam.AlignedSegment.from_dict(bamL, inBAM.header)
             ouBAM.write(bamL)
