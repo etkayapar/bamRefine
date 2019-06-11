@@ -1,4 +1,6 @@
 import pysam
+import os
+import pickle
 
 cdef isTransition(str ref,  str bamR):
 
@@ -180,6 +182,20 @@ def processBAM(inBAM, ouBAM, snps, contig):
     ouBAM.close()
 
 
+def handleSNPs(fName):
+    pickleName = fName + ".brf"
+    f_exists = os.path.isfile(pickleName)
+    if f_exists:
+        f = open(pickleName, 'rb')
+        snps = pickle.load(f)
+        f.close()
+    else:
+        snps = parseSNPs('chr_pos_ref_alt_1240K.all.snp')
+        f = open(pickleName, 'wb')
+        pickle.dump(snps, f)
+        f.close()
+
+    return snps
 
 
 
