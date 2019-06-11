@@ -1,23 +1,37 @@
 #! /usr/bin/env python3
 
 import sys
+import os
 import pysam
 import time
 from subprocess import Popen
 import getopt
+import bamRefine_cy
+import pickle
 
-chrms = [str(x) for x in range(1,23)]
-chrms += ['X', 'Y']
-
-thread = 2
-inName = None
-ouName = 'out.bam'
 
 # Processing command-line options for the program ------------------
 
+def usage():
+    msg = '''
+Usage: ./bamrefine [options]
+
+OPTIONS:
+        -i, --input:        Input BAM file
+        -o, --output:       Output BAM file [out.bam]
+        -s, --snps:         Snp collection file [chr_pos_ref_alt_1240K.all.snp]
+        -c, --chromosomes:  List of chromosomes.
+        -p, --threads:      # of threads to use [2]
+    '''
+
+    print(msg)
+    sys.exit()
+
 options, remainder = getopt.gnu_getopt(sys.argv[1:],
-                                       'i:o:p:k',
+                                       'i:s:c:o:p:k',
                                        ['input=',
+                                        'snps=',
+                                        'chromosomes=',
                                        'output=',
                                        'threads=',
                                        'keeptmp'])
@@ -28,7 +42,18 @@ for opt, arg in options:
         ouName = arg
     elif opt in ('-p', '--threads'):
         thread = int(arg)
+    elif opt in ('-s', '--snps'):
+        snpF = arg
+    elif opt in ('-c', '--chromosomes'):
+        chrmF = arg
+    else:
+        usage()
 
+## default args
+chrmF = 'chrms.txt'
+thread = 2
+inName = None
+ouName = 'out.bam'
 ## ----------------------------------------------------------------
 
 def parallelParse(jobL, n):
@@ -65,6 +90,27 @@ def parallelParse(jobL, n):
 
     while len([i for i in range(n) if activeJobs[i].poll() != None]) < len(activeJobs):
         continue
+
+def handleSNPs(fName):
+    pickleName = fName + ".brf"
+    f_exists = os.path.isfile(pickleName)
+    if f_exists:
+        f = open(pickleName, 'rb')
+        snps = pickle.load(f)
+        f.close()
+    else:
+        snps = bamRefine_cy.parseSNPs('chr_pos_ref_alt_1240K.all.snp')
+        f = open(pickleName, 'wb')
+        pickle.dump(snps, f)
+        f.close()
+
+    return snps
+
+
+snps = handleSNPs(snpF)
+
+del(bamRefine_cy)
+
 
 jobs = chrms.copy()
 parallelParse(jobs, thread)
