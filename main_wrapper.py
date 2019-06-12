@@ -17,6 +17,7 @@ chrmFname = 'chrms.txt'
 thread = 2
 inName = None
 ouName = 'out.bam'
+verbose = False
 
 def usage():
     msg = '''
@@ -26,20 +27,24 @@ OPTIONS:
         -i, --input:        Input BAM file
         -o, --output:       Output BAM file [out.bam]
         -s, --snps:         Snp collection file [chr_pos_ref_alt_1240K.all.snp]
-        -c, --chromosomes:  List of chromosomes.
         -p, --threads:      # of threads to use [2]
     '''
 
     print(msg)
     sys.exit()
-options, remainder = getopt.gnu_getopt(sys.argv[1:],
-                                       'i:s:c:o:p:k',
-                                       ['input=',
-                                        'snps=',
-                                        'chromosomes=',
-                                       'output=',
-                                       'threads=',
-                                       'keeptmp'])
+
+try:
+    options, remainder = getopt.gnu_getopt(sys.argv[1:],
+                                           'i:s:o:p:v',
+                                           ['input=',
+                                            'snps=',
+                                           'output=',
+                                           'threads=',
+                                           'verbose'])
+except getopt.GetoptError as err:
+    print(str(err))
+    usage()
+
 for opt, arg in options:
     if opt in ('-i', '--input'):
         inName = arg
@@ -49,8 +54,8 @@ for opt, arg in options:
         thread = int(arg)
     elif opt in ('-s', '--snps'):
         snpF = arg
-    elif opt in ('-c', '--chromosomes'):
-        chrmFname = arg
+    elif opt in ('-v', '--verbose'):
+        verbose = True
     else:
         usage()
 
@@ -65,7 +70,8 @@ def parallelParse(jobL, n):
         p = Popen([cmd], shell = True)
         activeJobs.append(p)
         jobN.append(c)
-        print('Started job for chr%s' % c)
+        if verbose:
+            print('Started job for chr%s' % c)
 
     while True:
         time.sleep(3)
@@ -81,8 +87,9 @@ def parallelParse(jobL, n):
                 c = jobL.pop()
                 cmd = "python3 main.py " + inName + " " + c
                 p = Popen([cmd], shell = True)
-                print("Finished job for chr%s" % jobN[i])
-                print("Started job for chr%s" % c)
+                if verbose:
+                    print("Finished job for chr%s" % jobN[i])
+                    print("Started job for chr%s" % c)
                 activeJobs[i] = p
                 jobN[i] = c
 
@@ -95,6 +102,8 @@ with open(chrmFname) as chrmF:
     chrms = [x.strip() for x in chrmF.readlines()]
 
 jobs = chrms.copy()
+
+print('Started bam filtering\n')
 parallelParse(jobs, thread)
 
 print("Please wait...")
@@ -127,7 +136,8 @@ while reheading.poll() == None:
 
 print("Finished merging.")
 
-cleanup_cmd = "for i in `cat toMerge_bamlist.txt`; do rm $i ;done"
+cleanup_cmd = "for i in `cat toMerge_bamlist.txt`; do rm $i ;done" 
+cleanup_cmd += " ; rm toMerge_bamlist.txt"
 
 print("Cleaning up temp. files...")
 
