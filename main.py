@@ -6,10 +6,11 @@ from bamRefine_cy import *
 inName = sys.argv[1]
 contig = sys.argv[2]
 lookup = sys.argv[3]
+snps = sys.argv[4]
 
 
 
-snps = handleSNPs('chr_pos_ref_alt_1240K.all.snp')
+snps = handleSNPs(snps)
 # snps = list(snps.values())
 # snps = snps[:3000]
 

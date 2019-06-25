@@ -19,6 +19,7 @@ inName = None
 ouName = 'out.bam'
 lookup = 10
 verbose = False
+snpF = 'chr_pos_ref_alt_1240K.all.snp'
 
 
 def usage():
@@ -69,9 +70,11 @@ for opt, arg in options:
 def parallelParse(jobL, n, lookup):
     activeJobs = []
     jobN = []
+    global snpF
     for i in range(n):
         c = jobL.pop()
-        cmd = "python3 main.py " + inName + " " + c
+        cmdList = ["python3 main.py",inName,c, lookup, snpF]
+        cmd = " ".join(cmdList)
         p = Popen([cmd], shell = True)
         activeJobs.append(p)
         jobN.append(c)
@@ -90,7 +93,8 @@ def parallelParse(jobL, n, lookup):
                 if len(jobL) == 0:
                     continue
                 c = jobL.pop()
-                cmd = "python3 main.py " + inName + " " + c + " " + lookup
+                cmdList = ["python3 main.py",inName,c, lookup, snpF]
+                cmd = " ".join(cmdList)
                 p = Popen([cmd], shell = True)
                 if verbose:
                     print("Finished job for chr%s" % jobN[i])
@@ -109,7 +113,7 @@ with open(chrmFname) as chrmF:
 jobs = chrms.copy()
 
 print('Started bam filtering\n')
-parallelParse(jobs, thread)
+parallelParse(jobs, thread, lookup)
 
 print("Please wait...")
 time.sleep(10)
