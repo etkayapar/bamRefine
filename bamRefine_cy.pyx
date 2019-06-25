@@ -35,7 +35,7 @@ def parseBam(bamL, fields = ('chrm', 'pos', 'seq')):
 
 # Parse snp catalogue
 
-cpdef flagReads(snpLocDic, bamLine):
+cpdef flagReads(snpLocDic, bamLine, look):
 
     '''
     Find if there is a snp in the loaded SNP catalogue
@@ -50,7 +50,7 @@ cpdef flagReads(snpLocDic, bamLine):
     cdef int end = start + len(seq)
     cdef int ref = 2
     cdef int alt = 3
-    cdef list lookup = list(range(start, start+10)) + list(range(end-9, end))
+    cdef list lookup = list(range(start, start+look)) + list(range(end-look-1, end))
     cdef int nt
     #cdef str key
     cdef list snp
@@ -152,7 +152,7 @@ def filterBAM(inAln, outAln, faultyReads):
             outAln.write(read)
 
 
-def processBAM(inBAM, ouBAM, snps, contig):
+def processBAM(inBAM, ouBAM, snps, contig, lookup):
 
     # cdef dict bamL
     cdef list m_pos
@@ -163,7 +163,7 @@ def processBAM(inBAM, ouBAM, snps, contig):
 
     for read in inBAM.fetch(contig):
         bamL = read.to_dict()
-        mask, m_pos = flagReads(snps, bamL)
+        mask, m_pos = flagReads(snps, bamL, lookup)
         if mask == True:
             for p in m_pos:
                 # print('in read %s, position %d' % (bamL['name'], p))

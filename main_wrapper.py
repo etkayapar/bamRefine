@@ -17,7 +17,9 @@ chrmFname = 'chrms.txt'
 thread = 2
 inName = None
 ouName = 'out.bam'
+lookup = 10
 verbose = False
+
 
 def usage():
     msg = '''
@@ -35,11 +37,12 @@ OPTIONS:
 
 try:
     options, remainder = getopt.gnu_getopt(sys.argv[1:],
-                                           'i:s:o:p:v',
+                                           'i:s:o:p:l:v',
                                            ['input=',
                                             'snps=',
                                            'output=',
                                            'threads=',
+                                            'pmd-length-threshold'
                                            'verbose'])
 except getopt.GetoptError as err:
     print(str(err))
@@ -54,6 +57,8 @@ for opt, arg in options:
         thread = int(arg)
     elif opt in ('-s', '--snps'):
         snpF = arg
+    elif opt in ('-l', '--pmd-length-threshold'):
+        lookup = arg
     elif opt in ('-v', '--verbose'):
         verbose = True
     else:
@@ -61,7 +66,7 @@ for opt, arg in options:
 
 ## ----------------------------------------------------------------
 
-def parallelParse(jobL, n):
+def parallelParse(jobL, n, lookup):
     activeJobs = []
     jobN = []
     for i in range(n):
@@ -77,7 +82,7 @@ def parallelParse(jobL, n):
         time.sleep(3)
         if len(jobL) == 0:
             break
-        # get list of all finished processes 
+        # get list of all finished processes
         finished = [i for i in range(n) if activeJobs[i].poll() != None]
         n_f = len(finished)
         if n_f > 0:
@@ -85,7 +90,7 @@ def parallelParse(jobL, n):
                 if len(jobL) == 0:
                     continue
                 c = jobL.pop()
-                cmd = "python3 main.py " + inName + " " + c
+                cmd = "python3 main.py " + inName + " " + c + " " + lookup
                 p = Popen([cmd], shell = True)
                 if verbose:
                     print("Finished job for chr%s" % jobN[i])
