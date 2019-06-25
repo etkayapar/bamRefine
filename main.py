@@ -5,6 +5,7 @@ from bamRefine_cy import *
 
 inName = sys.argv[1]
 contig = sys.argv[2]
+lookup = sys.argv[3]
 
 
 
@@ -17,4 +18,4 @@ ouName = contig + ".bam"
 inBAM = pysam.AlignmentFile(inName, 'rb')
 ouBAM = pysam.AlignmentFile(ouName, 'wb', template=inBAM)
 
-processBAM(inBAM, ouBAM, snps, contig)
+processBAM(inBAM, ouBAM, snps, contig, lookup)
