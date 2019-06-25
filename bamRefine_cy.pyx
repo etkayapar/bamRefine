@@ -160,6 +160,7 @@ def processBAM(inBAM, ouBAM, snps, contig, lookup):
     cdef str t1
     cdef list q
     cdef str q1
+    lookup = int(lookup)
 
     for read in inBAM.fetch(contig):
         bamL = read.to_dict()
