@@ -27,10 +27,12 @@ def usage():
 Usage: ./bamrefine [options]
 
 OPTIONS:
-        -i, --input:        Input BAM file
-        -o, --output:       Output BAM file [out.bam]
-        -s, --snps:         Snp collection file [chr_pos_ref_alt_1240K.all.snp]
-        -p, --threads:      # of threads to use [2]
+        -i, --input:                        Input BAM file
+        -o, --output:                       Output BAM file [out.bam]
+        -s, --snps:                         Snp collection file [chr_pos_ref_alt_1240K.all.snp]
+        -p, --threads:                      # of threads to use [2]
+        -l, --pmd-length-threshold          pmd length threshold [10]
+        -v, --verbose                       verbose output of progress
     '''
 
     print(msg)
