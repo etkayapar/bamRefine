@@ -51,6 +51,9 @@ except getopt.GetoptError as err:
     print(str(err))
     usage()
 
+if len(options) < 1:
+    usage()
+
 for opt, arg in options:
     if opt in ('-i', '--input'):
         inName = arg
