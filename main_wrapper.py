@@ -28,20 +28,21 @@ def usage():
 Usage: ./bamrefine [options]
 
 OPTIONS:
-        -i, --input:                        Input BAM file
-
-        -o, --output:                       Output BAM file [out.bam]
-
-        -s, --snps:                         Snp collection file [chr_pos_ref_alt_1240K.all.snp]
-
-        -p, --threads:                      # of threads to use [2]
-
-        -g, --ref-genome                    Path to ref. genome to fetch chr/contig names
-                                            or, a .txt file containing chr names
-
-        -l, --pmd-length-threshold          pmd length threshold [10]
-
-        -v, --verbose                       verbose output of progress
+        -i, --input
+                      Input BAM file
+        -o, --output
+                      Output BAM file [out.bam]
+        -s, --snps
+                      BED formatted file for snps [chr_pos_ref_alt_1240K.all.snp]
+        -p, --threads
+                      # of threads to use [2]
+        -g, --ref-genome
+                      Path to ref. genome to fetch chr/contig names or, a .txt
+                      file containing chr names
+        -l, --pmd-length-threshold
+                      pmd length threshold [10]
+        -v, --verbose
+                      verbose output of progress
     '''
 
     print(msg)
