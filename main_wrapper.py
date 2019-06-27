@@ -14,6 +14,7 @@ import pickle
 
 ## default args
 chrmFname = 'chrms.txt'
+genomeF = None 
 thread = 2
 inName = None
 ouName = 'out.bam'
@@ -28,10 +29,18 @@ Usage: ./bamrefine [options]
 
 OPTIONS:
         -i, --input:                        Input BAM file
+
         -o, --output:                       Output BAM file [out.bam]
+
         -s, --snps:                         Snp collection file [chr_pos_ref_alt_1240K.all.snp]
+
         -p, --threads:                      # of threads to use [2]
+
+        -g, --ref-genome                    Path to ref. genome to fetch chr/contig names
+                                            or, a .txt file containing chr names
+
         -l, --pmd-length-threshold          pmd length threshold [10]
+
         -v, --verbose                       verbose output of progress
     '''
 
@@ -40,11 +49,12 @@ OPTIONS:
 
 try:
     options, remainder = getopt.gnu_getopt(sys.argv[1:],
-                                           'i:s:o:p:l:v',
+                                           'i:s:o:p:g:l:v',
                                            ['input=',
                                             'snps=',
                                            'output=',
                                            'threads=',
+                                            'ref-genome',
                                             'pmd-length-threshold'
                                            'verbose'])
 except getopt.GetoptError as err:
@@ -65,6 +75,8 @@ for opt, arg in options:
         snpF = arg
     elif opt in ('-l', '--pmd-length-threshold'):
         lookup = arg
+    elif opt in ('-g', '--ref-genome'):
+        genomeF = arg
     elif opt in ('-v', '--verbose'):
         verbose = True
     else:
@@ -112,8 +124,23 @@ def parallelParse(jobL, n, lookup):
     while len([i for i in range(n) if activeJobs[i].poll() != None]) < len(activeJobs):
         continue
 
-with open(chrmFname) as chrmF:
-    chrms = [x.strip() for x in chrmF.readlines()]
+if genomeF == None:
+    with open(chrmFname) as chrmF:
+        chrms = [x.strip() for x in chrmF.readlines()]
+else:
+    get_chr_cmdList = ['./getchrms.sh', genomeF, '> ./tmp.chr'] 
+    get_chr_cmd = " ".join(get_chr_cmdList)
+    fetching = Popen([get_chr_cmd], shell = True)
+    if verbose:
+        print("Fetching Chromosomes from fasta...")
+    while fetching.poll() == None:
+        continue
+    chrmFname = 'tmp.chr'
+    with open(chrmFname) as chrmF:
+        chrms = [x.strip() for x in chrmF.readlines()]
+    if verbose:
+        print("Done.")
+
 
 jobs = chrms.copy()
 
