@@ -13,14 +13,14 @@ import pickle
 # Processing command-line options for the program ------------------
 
 ## default args
-chrmFname = 'chrms.txt'
-genomeF = None 
-thread = 2
+chrmFname = None
+genomeF = None
+thread = None
 inName = None
-ouName = 'out.bam'
-lookup = 10
+ouName = None
+lookup = None
 verbose = False
-snpF = 'chr_pos_ref_alt_1240K.all.snp'
+snpF = None
 
 
 def usage():
@@ -31,16 +31,15 @@ OPTIONS:
         -i, --input
                       Input BAM file
         -o, --output
-                      Output BAM file [out.bam]
+                      Output BAM file
         -s, --snps
-                      BED formatted file for snps [chr_pos_ref_alt_1240K.all.snp]
+                      BED  or SNP formatted file for snps
         -p, --threads
-                      # of threads to use [2]
+                      # of threads to use
         -g, --ref-genome
-                      Path to ref. genome to fetch chr/contig names or, a .txt
-                      file containing chr names
+                      Path to ref. genome to fetch chr/contig names
         -l, --pmd-length-threshold
-                      pmd length threshold [10]
+                      pmd length threshold
         -v, --verbose
                       verbose output of progress
     '''
@@ -63,6 +62,7 @@ except getopt.GetoptError as err:
     usage()
 
 if len(options) < 1:
+    print("All options needs arguments")
     usage()
 
 for opt, arg in options:
@@ -128,7 +128,7 @@ def parallelParse(jobL, n, lookup):
 if genomeF == None:
     with open(chrmFname) as chrmF:
         chrms = [x.strip() for x in chrmF.readlines()]
-else:
+elif os.path.isfile(genomeF+".fai"):
     get_chr_cmdList = ['./getchrms.sh', genomeF, '> ./tmp.chr'] 
     get_chr_cmd = " ".join(get_chr_cmdList)
     fetching = Popen([get_chr_cmd], shell = True)
@@ -141,6 +141,17 @@ else:
         chrms = [x.strip() for x in chrmF.readlines()]
     if verbose:
         print("Done.")
+elif os.path.isfile(genomeF):
+    msg = '''
+Genome fasta is not indexed. Please index your genome with
+samtools index
+    '''
+else:
+    msg = '''
+Can't find genome fasta in the specified path.
+    '''
+    print(msg)
+    exit()
 
 
 jobs = chrms.copy()
