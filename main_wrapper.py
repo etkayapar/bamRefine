@@ -29,19 +29,20 @@ Usage: ./bamrefine [options]
 
 OPTIONS:
         -i, --input
-                      Input BAM file
+                                      Input BAM file
         -o, --output
-                      Output BAM file
+                                      Output BAM file
         -s, --snps
-                      BED  or SNP formatted file for snps
+                                      BED  or SNP formatted file for snps
         -p, --threads
-                      # of threads to use
+                                      # of threads to use
         -g, --ref-genome
-                      Path to ref. genome to fetch chr/contig names
+                                      Path to ref. genome to fetch chr/contig names
         -l, --pmd-length-threshold
-                      pmd length threshold
+                                      pmd length threshold
+FLAGS:
         -v, --verbose
-                      verbose output of progress
+                                      verbose output of progress
     '''
 
     print(msg)
@@ -61,8 +62,8 @@ except getopt.GetoptError as err:
     print(str(err))
     usage()
 
-if len(options) < 1:
-    print("All options needs arguments")
+if len(options) < 6:
+    print("All options need arguments")
     usage()
 
 for opt, arg in options:
@@ -129,18 +130,11 @@ if genomeF == None:
     with open(chrmFname) as chrmF:
         chrms = [x.strip() for x in chrmF.readlines()]
 elif os.path.isfile(genomeF+".fai"):
-    get_chr_cmdList = ['./getchrms.sh', genomeF, '> ./tmp.chr'] 
-    get_chr_cmd = " ".join(get_chr_cmdList)
-    fetching = Popen([get_chr_cmd], shell = True)
-    if verbose:
-        print("Fetching Chromosomes from fasta...")
-    while fetching.poll() == None:
-        continue
-    chrmFname = 'tmp.chr'
+    print("Fetching Chromosomes from fasta...")
+    chrmFname = genomeF+".fai"
     with open(chrmFname) as chrmF:
-        chrms = [x.strip() for x in chrmF.readlines()]
-    if verbose:
-        print("Done.")
+        chrms = [x.strip().split()[0] for x in chrmF.readlines()]
+    print("Done.")
 elif os.path.isfile(genomeF):
     msg = '''
 Genome fasta is not indexed. Please index your genome with
@@ -152,6 +146,34 @@ Can't find genome fasta in the specified path.
     '''
     print(msg)
     exit()
+
+## if genomeF == None:
+##     with open(chrmFname) as chrmF:
+##         chrms = [x.strip() for x in chrmF.readlines()]
+## elif os.path.isfile(genomeF+".fai"):
+##     get_chr_cmdList = ['./getchrms.sh', genomeF, '> ./tmp.chr'] 
+##     get_chr_cmd = " ".join(get_chr_cmdList)
+##     fetching = Popen([get_chr_cmd], shell = True)
+##     if verbose:
+##         print("Fetching Chromosomes from fasta...")
+##     while fetching.poll() == None:
+##         continue
+##     chrmFname = 'tmp.chr'
+##     with open(chrmFname) as chrmF:
+##         chrms = [x.strip() for x in chrmF.readlines()]
+##     if verbose:
+##         print("Done.")
+## elif os.path.isfile(genomeF):
+##     msg = '''
+## Genome fasta is not indexed. Please index your genome with
+## samtools index
+##     '''
+## else:
+##     msg = '''
+## Can't find genome fasta in the specified path.
+##     '''
+##     print(msg)
+##     exit()
 
 
 jobs = chrms.copy()
