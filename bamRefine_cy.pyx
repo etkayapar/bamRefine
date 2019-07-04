@@ -1,6 +1,7 @@
 import pysam
 import os
 import pickle
+import sys
 
 cdef isTransition(str ref,  str bamR):
 
@@ -50,14 +51,18 @@ cpdef flagReads(snpLocDic, bamLine, look):
     cdef int end = start + len(seq)
     cdef int ref = 2
     cdef int alt = 3
-    cdef list lookup = list(range(start, start+look)) + list(range(end-look-1, end))
+    cdef list inspectRange = list(range(start, start+look)) + list(range(end-look-1, end))
     cdef int nt
     #cdef str key
     cdef list snp
 
     cdef list snpList = [] # store transitions pos. in the ends
 
-    for nt in lookup:
+    if len(seq) < look:
+        return ('dump', snpList)
+
+    #sys.displayhook(inspectRange)
+    for nt in inspectRange:
         key = chrm + " " + str(nt)
         try:
             snp = snpLocDic[key]
@@ -70,9 +75,9 @@ cpdef flagReads(snpLocDic, bamLine, look):
             continue
 
     if len(snpList) > 0:
-        return (True, snpList)
+        return ('mask', snpList)
     else:
-        return (False, snpList)
+        return ('nomask', snpList)
 
 def parseSNPs(fName):
     snpF = open(fName)
@@ -88,7 +93,7 @@ def parseSNPs(fName):
             continue
         key = curC + " " + snp[1]
         snps[key] = snp
-    snpF.close()
+        snpF.close()
     return snps
 
 
@@ -164,8 +169,9 @@ def processBAM(inBAM, ouBAM, snps, contig, lookup):
 
     for read in inBAM.fetch(contig):
         bamL = read.to_dict()
+        #print(bamL)
         mask, m_pos = flagReads(snps, bamL, lookup)
-        if mask == True:
+        if mask == 'mask':
             for p in m_pos:
                 # print('in read %s, position %d' % (bamL['name'], p))
                 t = list(bamL['seq']) ; t[p] = 'N' ; t1 = "".join(t) ; del(t)
@@ -175,9 +181,11 @@ def processBAM(inBAM, ouBAM, snps, contig, lookup):
                 # bamLine --> pysam.AlignedSegment
             bamL = pysam.AlignedSegment.from_dict(bamL, inBAM.header)
             ouBAM.write(bamL)
-        else:
+        elif mask == 'nomask':
             bamL = pysam.AlignedSegment.from_dict(bamL, inBAM.header)
             ouBAM.write(bamL)
+        else:
+            continue
 
     inBAM.close()
     ouBAM.close()
@@ -197,8 +205,3 @@ def handleSNPs(fName):
         f.close()
 
     return snps
-
-
-
-
-
