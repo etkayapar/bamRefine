@@ -48,18 +48,20 @@ cpdef flagReads(snpLocDic, bamLine, look):
     cdef str chrm = bamLine['ref_name']
     cdef int start = int(bamLine['ref_pos'])
     cdef str seq = bamLine['seq']
-    cdef int end = start + len(seq)
+    cdef int end = start + len(seq) #end variable is 1 more then actual end position for ease of use in range() calls
     cdef int ref = 2
     cdef int alt = 3
-    cdef list inspectRange = list(range(start, start+look)) + list(range(end-look-1, end))
     cdef int nt
     #cdef str key
     cdef list snp
+    cdef list inspectRange
 
     cdef list snpList = [] # store transitions pos. in the ends
 
-    if len(seq) < look:
-        return ('dump', snpList)
+    if len(seq) > look:
+        inspectRange = list(range(start, start+look)) + list(range(end-look-1, end))
+    else:
+        inspectRange = list(range(start, end))
 
     #sys.displayhook(inspectRange)
     for nt in inspectRange:
@@ -93,7 +95,7 @@ def parseSNPs(fName):
             continue
         key = curC + " " + snp[1]
         snps[key] = snp
-        snpF.close()
+    snpF.close()
     return snps
 
 
@@ -199,7 +201,7 @@ def handleSNPs(fName):
         snps = pickle.load(f)
         f.close()
     else:
-        snps = parseSNPs('chr_pos_ref_alt_1240K.all.snp')
+        snps = parseSNPs(fName)
         f = open(pickleName, 'wb')
         pickle.dump(snps, f)
         f.close()
