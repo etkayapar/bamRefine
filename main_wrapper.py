@@ -10,6 +10,7 @@ import bamRefine_cy
 import pickle
 
 
+dirN = os.path.dirname(os.path.realpath(__file__))#dirname of the script
 # Processing command-line options for the program ------------------
 
 ## default args
@@ -92,7 +93,7 @@ def parallelParse(jobL, n, lookup):
     global snpF
     for i in range(n):
         c = jobL.pop()
-        cmdList = ["python3 main.py",inName,c, lookup, snpF]
+        cmdList = ["python3", dirN+ "/main.py",inName,c, lookup, snpF]
         cmd = " ".join(cmdList)
         p = Popen([cmd], shell = True)
         activeJobs.append(p)
@@ -112,7 +113,7 @@ def parallelParse(jobL, n, lookup):
                 if len(jobL) == 0:
                     continue
                 c = jobL.pop()
-                cmdList = ["python3 main.py",inName,c, lookup, snpF]
+                cmdList = ["python3", dirN+ "/main.py",inName,c, lookup, snpF]
                 cmd = " ".join(cmdList)
                 p = Popen([cmd], shell = True)
                 if verbose:
