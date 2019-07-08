@@ -26,24 +26,16 @@ snpF = None
 
 def usage():
     msg = '''
-Usage: ./bamrefine [options]
+Usage: ./bamrefine [options] <in.bam> <out.bam>
 
 OPTIONS:
-        -i, --input
-                                      Input BAM file
-        -o, --output
-                                      Output BAM file
-        -s, --snps
-                                      BED  or SNP formatted file for snps
-        -p, --threads
-                                      # of threads to use
-        -g, --ref-genome
-                                      Path to ref. genome to fetch chr/contig names
-        -l, --pmd-length-threshold
-                                      pmd length threshold
+        -s, --snps                    BED  or SNP formatted file for snps
+        -p, --threads                 # of threads to use
+        -g, --ref-genome              Path to ref. genome to fetch chr/contig names
+        -l, --pmd-length-threshold    pmd length threshold
 FLAGS:
-        -v, --verbose
-                                      verbose output of progress
+        -h, --help                    display this message end exit
+        -v, --verbose                 verbose output of progress
     '''
 
     print(msg)
@@ -51,28 +43,20 @@ FLAGS:
 
 try:
     options, remainder = getopt.gnu_getopt(sys.argv[1:],
-                                           'i:s:o:p:g:l:v',
-                                           ['input=',
-                                            'snps=',
-                                           'output=',
+                                           's:p:g:l:vh',
+                                           ['snps=',
                                            'threads=',
                                             'ref-genome',
                                             'pmd-length-threshold'
-                                           'verbose'])
+                                           'verbose',
+                                            'help'])
 except getopt.GetoptError as err:
     print(str(err))
     usage()
 
-if len(options) < 6:
-    print("All options need arguments")
-    usage()
 
 for opt, arg in options:
-    if opt in ('-i', '--input'):
-        inName = arg
-    elif opt in ('-o', '--output'):
-        ouName = arg
-    elif opt in ('-p', '--threads'):
+    if opt in ('-p', '--threads'):
         thread = int(arg)
     elif opt in ('-s', '--snps'):
         snpF = arg
@@ -82,8 +66,18 @@ for opt, arg in options:
         genomeF = arg
     elif opt in ('-v', '--verbose'):
         verbose = True
+    elif opt in ('-h', '--help'):
+        usage()
     else:
         usage()
+
+
+if len(options) < 4:
+    print("All options need arguments")
+    usage()
+
+inName = remainder[0]
+ouName = remainder[1]
 
 ## ----------------------------------------------------------------
 

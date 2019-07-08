@@ -1,0 +1,33 @@
+.TH bamrefine 1 "6 July 19"
+.SH NAME
+bamrefine \- Mask transition SNPs from a BAM file
+.SH SYNOPSIS
+\fB bamrefine \fP [OPTIONS][-v] <in.bam> <out.bam>
+.SH DESCRIPTION
+\fBbamrefine\fP processes a BAM file to mask the transition SNPs
+if they are in a possible PMD (post-mortem damage) region and 
+therefore cannot be trusted as authentic SNPs.
+.SS OPTIONS
+.TP
+\fB-s, --snps\fP
+Path to BED formatted file for SNP positions and reference and
+alternative alleles.
+.TP
+\fB-p, --threads\fP
+Number of threads to run the program in parallel.
+.TP
+\fB-g, --ref-genome \fP
+Path to genome .fasta for the program to fetch the chromosome
+names from.
+.TP
+\fB-l, --pmd-length-threshold\fP
+PMD length threshold. SNPs that are up to this far in any read
+will be evaluated and masked if it is a transition.
+.SS FLAGS
+.TP
+\fB-h, --help\fP
+display a short help message inplace
+.TP
+\fB-v, --verbose\fP
+Verbose output of progress
+

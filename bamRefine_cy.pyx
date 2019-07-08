@@ -86,15 +86,22 @@ def parseSNPs(fName):
     # curC = 'chr1'
     # chrm = 'chr1'
     snps = {}
+    if fName.endswith('.snp'):
+        chrI = 1
+        posI = 3
+        refI, altI = (4, 5)
+    elif fName.endswith('.bed'):
+        chrI, posI, refI, altI = tuple(range(4))
+
 
     for snp in snpF:
         snp = snp.strip().split()
-        curC = snp[0]
-        if not isTransition(snp[2], snp[3]):
+        curC = snp[chrI]
+        if not isTransition(snp[refI], snp[altI]):
             # ignoring transversions
             continue
-        key = curC + " " + snp[1]
-        snps[key] = snp
+        key = curC + " " + snp[posI]
+        snps[key] = [snp[x] for x in [chrI, posI, refI, altI]]
     snpF.close()
     return snps
 
