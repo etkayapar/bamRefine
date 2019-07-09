@@ -8,6 +8,7 @@ from subprocess import Popen
 import getopt
 import bamRefine_cy
 import pickle
+import shutil
 
 
 dirN = os.path.dirname(os.path.realpath(__file__))#dirname of the script
@@ -142,38 +143,13 @@ Can't find genome fasta in the specified path.
     print(msg)
     exit()
 
-## if genomeF == None:
-##     with open(chrmFname) as chrmF:
-##         chrms = [x.strip() for x in chrmF.readlines()]
-## elif os.path.isfile(genomeF+".fai"):
-##     get_chr_cmdList = ['./getchrms.sh', genomeF, '> ./tmp.chr'] 
-##     get_chr_cmd = " ".join(get_chr_cmdList)
-##     fetching = Popen([get_chr_cmd], shell = True)
-##     if verbose:
-##         print("Fetching Chromosomes from fasta...")
-##     while fetching.poll() == None:
-##         continue
-##     chrmFname = 'tmp.chr'
-##     with open(chrmFname) as chrmF:
-##         chrms = [x.strip() for x in chrmF.readlines()]
-##     if verbose:
-##         print("Done.")
-## elif os.path.isfile(genomeF):
-##     msg = '''
-## Genome fasta is not indexed. Please index your genome with
-## samtools index
-##     '''
-## else:
-##     msg = '''
-## Can't find genome fasta in the specified path.
-##     '''
-##     print(msg)
-##     exit()
-
-
 jobs = chrms.copy()
+## Create a tmp directory
+os.mkdir('tmp_bamrefine')
+
 
 print('Started bam filtering\n')
+os.chdir('tmp_bamrefine')
 parallelParse(jobs, thread, lookup)
 
 print("Please wait...")
@@ -181,15 +157,16 @@ time.sleep(10)
 
 print("Finished BAM filtering\nMerging BAM files...")
 
+
+
+## samtools merge commands -------------
 with open('toMerge_bamlist.txt', 'w') as f:
     for c in chrms:
         f.write(c+'.bam\n')
 
 toMergeF = 'toMerge_bamlist.txt'
-
-
 merge_cmd = "samtools merge -b " + toMergeF + " -O BAM -@ "
-merge_cmd += str(thread) + " " +  ouName
+merge_cmd += str(thread) + " ../" +  ouName
 
 merging = Popen([merge_cmd], shell = True)
 
@@ -206,15 +183,13 @@ while reheading.poll() == None:
 
 print("Finished merging.")
 
-cleanup_cmd = "for i in `cat toMerge_bamlist.txt`; do rm $i ;done" 
-cleanup_cmd += " ; rm toMerge_bamlist.txt"
+### -----------------------------------
+## Cleaning up temp files -------------
+os.chdir('../')
 
-print("Cleaning up temp. files...")
+shutil.rmtree('tmp_bamrefine')
 
-cleanup = Popen([cleanup_cmd], shell = True)
-
-while cleanup.poll() == None:
-    continue
+### ----------------------------------
 
 print("Program finished successfully.")
 
