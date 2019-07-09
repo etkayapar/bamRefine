@@ -1,5 +1,6 @@
 import sys
 from bamRefine_cy import *
+import os
 # import pysam
 
 
@@ -9,6 +10,7 @@ lookup = sys.argv[3]
 snps = sys.argv[4]
 
 
+os.chdir('tmp_bamrefine')
 
 snps = handleSNPs(snps)
 # snps = list(snps.values())
