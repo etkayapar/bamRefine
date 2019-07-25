@@ -9,8 +9,8 @@ contig = sys.argv[2]
 lookup = sys.argv[3]
 snps = sys.argv[4]
 
-
-os.chdir('tmp_bamrefine')
+## print(os.getcwd())
+## os.chdir('tmp_bamrefine')
 
 snps = handleSNPs(snps)
 # snps = list(snps.values())

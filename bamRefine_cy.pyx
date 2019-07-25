@@ -201,7 +201,7 @@ def processBAM(inBAM, ouBAM, snps, contig, lookup):
 
 
 def handleSNPs(fName):
-    pickleName = fName + ".brf"
+    pickleName = os.path.basename(fName) + ".brf"
     f_exists = os.path.isfile(pickleName)
     if f_exists:
         f = open(pickleName, 'rb')
