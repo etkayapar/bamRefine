@@ -77,8 +77,32 @@ if len(options) < 4:
     print("All options need arguments")
     usage()
 
-inName = remainder[0]
-ouName = remainder[1]
+if remainder[0].startswith('/'):
+    inName = remainder[0]
+else:
+    inName = './'+remainder[0]
+
+if remainder[1].startswith('/'):
+    ouName = remainder[1]
+else:
+    ouName = './'+remainder[1]
+
+if snpF.startswith('/'):
+    pass
+else:
+    snpF = './'+snpF
+
+if genomeF.startswith('/'):
+    pass
+else:
+    genomeF = './'+genomeF
+
+inName  = os.path.abspath(inName)
+ouName  = os.path.abspath(ouName)
+snpF    = os.path.abspath(snpF)
+genomeF = os.path.abspath(genomeF)
+
+
 
 ## ----------------------------------------------------------------
 
@@ -166,7 +190,13 @@ with open('toMerge_bamlist.txt', 'w') as f:
 
 toMergeF = 'toMerge_bamlist.txt'
 merge_cmd = "samtools merge -b " + toMergeF + " -O BAM -@ "
-merge_cmd += str(thread) + " ../" +  ouName
+merge_cmd += " ".join([str(thread),ouName])
+
+## debugging stuff --------
+print(os.getcwd())
+print(merge_cmd)
+
+### ----------------------
 
 merging = Popen([merge_cmd], shell = True)
 
@@ -175,6 +205,8 @@ while merging.poll() == None:
 
 rehead_cmd = "samtools view -H " + inName + " | samtools reheader -P  - " + ouName
 rehead_cmd += " > rehead.bam" + " ; mv rehead.bam " + ouName
+
+print(rehead_cmd)
 
 reheading = Popen([rehead_cmd], shell = True)
 
