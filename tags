@@ -1,9 +1,0 @@
-dists	snpDists.py	/^def dists(snpLocDic):$/
-filterBAM	bamRefine.py	/^def filterBAM(inAln, outAln, faultyReads):$/
-flagReads	bamRefine.py	/^def flagReads(snpLocDic, bamLine):$/
-isTransition	bamRefine.py	/^def isTransition(ref, bamR):$/
-parseBam	bamRefine.py	/^def parseBam(bamL, fields = ('chrm', 'pos', 'seq')/
-parseSNP_locs	snpDists.py	/^def parseSNP_locs(fName):$/
-parseSNPs	bamRefine.py	/^def parseSNPs(fName):$/
-parseSNPs_old	bamRefine.py	/^def parseSNPs_old(fName):$/
-snpMask	bamRefine.py	/^def snpMask(snps, samF):$/
