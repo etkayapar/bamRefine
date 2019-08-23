@@ -13,7 +13,7 @@ accordingly.
 
 ## Usage
 
-bamrefine [parameters] [flags] <in.bam> <out.bam>
+```bamrefine [parameters] [flags] <in.bam> <out.bam>```
 
 Parameters:
 
