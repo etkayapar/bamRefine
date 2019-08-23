@@ -29,4 +29,4 @@ Parameters:
 
 Flags:
 
-  * ``-v, --verbose```: verbose output of progress.
+  * ```-v, --verbose```: verbose output of progress.
