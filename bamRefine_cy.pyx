@@ -2,6 +2,7 @@ import pysam
 import os
 import pickle
 import sys
+import subprocess as sp
 
 cdef isTransition(str ref,  str bamR):
 
@@ -91,7 +92,18 @@ def parseSNPs(fName):
         posI = 3
         refI, altI = (4, 5)
     elif fName.endswith('.bed'):
+        ncol_cmdList = ["cat", fName, "|", "wc -w"]
+        ncol_cmd = " ".join(ncol_cmdList)
+        p = sp.Popen([ncol_cmd], shell=True,
+                     stdout = sp.PIPE,
+                     stderr = sp.STDOUT)
+        ncol, _ = p.communicate()
+        ncol = int(ncol.decode('utf-8').strip())
+
         chrI, posI, refI, altI = tuple(range(4))
+
+        if ncol == 5:
+           posI, refI, altI = tuple([x+1 for x in (posI, refI, altI)]) 
 
 
     for snp in snpF:
