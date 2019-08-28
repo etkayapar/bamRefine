@@ -92,7 +92,7 @@ def parseSNPs(fName):
         posI = 3
         refI, altI = (4, 5)
     elif fName.endswith('.bed'):
-        ncol_cmdList = ["cat", fName, "|", "wc -w"]
+        ncol_cmdList = ["head -n1", fName, "|", "wc -w"]
         ncol_cmd = " ".join(ncol_cmdList)
         p = sp.Popen([ncol_cmd], shell=True,
                      stdout = sp.PIPE,
