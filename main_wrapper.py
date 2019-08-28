@@ -110,6 +110,29 @@ def parallelParse(jobL, n, lookup):
     activeJobs = []
     jobN = []
     global snpF
+
+    ## careful with this part ------------------------------------
+
+    '''
+    Run the first contig independent of the parallelism
+    for the SNP pickle file not being written to and reading
+    from at the same time, it causes errors.
+    '''
+
+    firstC = jobL.pop()
+    cmdList = ["python3", dirN+ "/main.py",inName,firstC, lookup, snpF]
+    cmd = " ".join(cmdList)
+    firstCjob = Popen([cmd], shell = True)
+    ## activeJobs.append(p)
+    ## jobN.append(c)
+
+    while firstCjob.poll() != None: # wait until it finishes
+        continue
+
+    del([cmdList, cmd, firstCjob, firstC])
+
+    ### ----------------------------------------------------------
+
     for i in range(n):
         c = jobL.pop()
         cmdList = ["python3", dirN+ "/main.py",inName,c, lookup, snpF]
