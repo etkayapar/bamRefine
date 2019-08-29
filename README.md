@@ -3,13 +3,14 @@
 ## What is it?
 
 This is a BAM filtering/masking program that conditionally masks
-transition SNPs from BAM reads. In a nutshell, If a SNP is a
-transition and if its located on the ends of a BAM read. This
-ensures that, you are not using non-authentic SNPs that are
-most likely result of PMD(Post-mortem Damage). Therefore it is
-recommended that you use this program having PMD scores of your
-library and tweak the ```--pmd-length-threshold``` parameter 
-accordingly.
+transition SNPs from BAM reads. 
+
+It designed to be an alternative to hard clipping first N bases 
+of BAM reads with the suspicion of those regions containing 
+non-authentic (post mortem damage artifact) SNPs, or 
+ignoring transition SNPs alltogether. Instead, bamrefine masks 
+the transition SNPs in the possible PMD regions from both ends 
+of BAM reads (scope of the region specified by the user)
 
 ## Usage
 
