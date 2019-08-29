@@ -16,7 +16,7 @@ ends of BAM reads (scope of the region specified by the user)
 
 ```bamrefine [parameters] [flags] <in.bam> <out.bam>```
 
-Parameters:
+### Parameters:
 
   * `-s, --snps`: SNP collection file. This can be either
     BED or SNP formatted files. To see an example file, see
@@ -28,6 +28,22 @@ Parameters:
     both ends of a read to be treated as a possible PMD region.
   * `-p, --threads`: Threads to run the program in parallel.
 
-Flags:
+### Flags:
 
   * `-v, --verbose`: verbose output of progress.
+  
+## Dependencies
+
+This is a small program written in python3, so it requires pyton3.5
+or above is required. It has several python libraries that it depends
+on:
+
+  * `cython`
+  * `pysam`
+
+Though this is not a dependency by any means, it is recommended that you
+have PMD related statistics (e.g. up to which position there is a high 
+risk of seeing a PMD artifact) regarding your libraries before you run this
+program on the BAM files because the `--pmd-length-threshold` parameter
+requires an user specified value for the program to run. This can be achieved
+by using [PMDtools](https://github.com/pontussk/PMDtools)
