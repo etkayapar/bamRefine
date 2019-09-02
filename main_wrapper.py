@@ -192,11 +192,15 @@ Can't find genome fasta in the specified path.
 
 jobs = chrms.copy()
 ## Create a tmp directory
-os.mkdir('tmp_bamrefine')
+try:
+    os.mkdir('.tmp_bamrefine')
+except FileExistsError:
+    shutil.rmtree('.tmp_bamrefine')
+    os.mkdir('.tmp_bamrefine')
 
 
 print('Started bam filtering\n')
-os.chdir('tmp_bamrefine')
+os.chdir('.tmp_bamrefine')
 parallelParse(jobs, thread, lookup)
 
 print("Please wait...")
@@ -242,7 +246,7 @@ print("Finished merging.")
 ## Cleaning up temp files -------------
 os.chdir('../')
 
-shutil.rmtree('tmp_bamrefine')
+shutil.rmtree('.tmp_bamrefine')
 
 ### ----------------------------------
 
