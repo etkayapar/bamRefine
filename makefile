@@ -1,3 +1,5 @@
+.PHONY: build
+
 install:
 	bash install_dependencies.sh
 build:
