@@ -35,7 +35,7 @@ ends of BAM reads (scope of the region specified by the user)
 ## Dependencies
 
 This is a small program written in python3, so it requires pyton3.5
-or above is required. It has several python libraries that it depends
+or above. It has several python libraries that it depends
 on:
 
   * `cython`
