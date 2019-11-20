@@ -23,7 +23,7 @@ ends of BAM reads (scope of the region specified by the user)
     ```data/```
   * `-g, --genome-fasta`: Path to genome fasta file. This
     is needed only for fetcing contig names. Genome should be
-    indexed beforehand with `samtools index`.
+    indexed beforehand with `samtools faidx`.
   * `-l, --pmd-length-threshold`: N nucleotide region from
     both ends of a read to be treated as a possible PMD region.
   * `-p, --threads`: Threads to run the program in parallel.

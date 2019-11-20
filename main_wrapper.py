@@ -181,7 +181,7 @@ elif os.path.isfile(genomeF+".fai"):
 elif os.path.isfile(genomeF):
     msg = '''
 Genome fasta is not indexed. Please index your genome with
-samtools index
+samtools faidx
     '''
 else:
     msg = '''
