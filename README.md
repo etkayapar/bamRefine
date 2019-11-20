@@ -19,7 +19,10 @@ ends of BAM reads (scope of the region specified by the user)
 ### Parameters:
 
   * `-s, --snps`: SNP collection file. This can be either
-    BED or SNP formatted files. To see an example file, see
+    4/5 column BED or SNP formatted files. Fields/columns
+    can be either tab separated or space delimited. Both
+    are acceptable. For safety, dont mix and match two
+    delimiters in the same file. For examples, see
     ```data/```
   * `-g, --genome-fasta`: Path to genome fasta file. This
     is needed only for fetcing contig names. Genome should be
