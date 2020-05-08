@@ -9,6 +9,7 @@ import getopt
 import bamRefine_cy
 import pickle
 import shutil
+import glob
 
 
 dirN = os.path.dirname(os.path.realpath(__file__))#dirname of the script
@@ -23,10 +24,14 @@ ouName = None
 lookup = None
 verbose = False
 snpF = None
+addTags = False
+keeptmp = False
 
+nOptions=0
 
-def usage():
+def usage(help=False):
     msg = '''
+
 Usage: ./bamrefine [options] <in.bam> <out.bam>
 
 OPTIONS:
@@ -35,22 +40,36 @@ OPTIONS:
         -g, --ref-genome              Path to ref. genome to fetch chr/contig names
         -l, --pmd-length-threshold    pmd length threshold
 FLAGS:
-        -h, --help                    display this message end exit
+        -t, --add-tags                add maskings stats as optional SAM fields to the alignments
         -v, --verbose                 verbose output of progress
+        -k, --keep-tmp                don't remove the temporary directory (./.tmp_bamrefine)
+        -h, --help                    display this message end exit
+
+
     '''
+
+    helpmsg = '''
+Consider reading the man page. You can do so by navigating to the
+program's directory and run 'man ./bamrefine.1'
+'''
+
+    if help:
+        msg = helpmsg + msg
 
     print(msg)
     sys.exit()
 
 try:
     options, remainder = getopt.gnu_getopt(sys.argv[1:],
-                                           's:p:g:l:vh',
+                                           's:p:g:l:tvhk',
                                            ['snps=',
                                            'threads=',
-                                            'ref-genome',
-                                            'pmd-length-threshold'
+                                            'ref-genome=',
+                                            'pmd-length-threshold=',
+                                            'add-tags',
                                            'verbose',
-                                            'help'])
+                                            'help',
+                                           'keep-tmp'])
 except getopt.GetoptError as err:
     print(str(err))
     usage()
@@ -59,21 +78,29 @@ except getopt.GetoptError as err:
 for opt, arg in options:
     if opt in ('-p', '--threads'):
         thread = int(arg)
+        nOptions += 1
     elif opt in ('-s', '--snps'):
         snpF = arg
+        nOptions += 1
     elif opt in ('-l', '--pmd-length-threshold'):
         lookup = arg
+        nOptions += 1
     elif opt in ('-g', '--ref-genome'):
         genomeF = arg
+        nOptions += 1
+    elif opt in ('-t', '--add-tags'):
+        addTags = True
     elif opt in ('-v', '--verbose'):
         verbose = True
+    elif opt in ('-k', '--keep-tmp'):
+        keeptmp = True
     elif opt in ('-h', '--help'):
-        usage()
+        usage(help=True)
     else:
         usage()
 
 
-if len(options) < 4:
+if nOptions != 4:
     print("All options need arguments")
     usage()
 
@@ -120,7 +147,7 @@ def parallelParse(jobL, n, lookup):
     '''
 
     firstC = jobL.pop()
-    cmdList = ["python3", dirN+ "/main.py",inName,firstC, lookup, snpF]
+    cmdList = ["python3", dirN+ "/main.py",inName,firstC, lookup, snpF, str(int(addTags))]
     cmd = " ".join(cmdList)
     firstCjob = Popen([cmd], shell = True)
     ## activeJobs.append(p)
@@ -134,8 +161,12 @@ def parallelParse(jobL, n, lookup):
     ### ----------------------------------------------------------
 
     for i in range(n):
-        c = jobL.pop()
-        cmdList = ["python3", dirN+ "/main.py",inName,c, lookup, snpF]
+        try:
+            c = jobL.pop()
+        except IndexError:
+            return None
+
+        cmdList = ["python3", dirN+ "/main.py",inName,c, lookup, snpF, str(int(addTags))]
         cmd = " ".join(cmdList)
         p = Popen([cmd], shell = True)
         activeJobs.append(p)
@@ -155,7 +186,7 @@ def parallelParse(jobL, n, lookup):
                 if len(jobL) == 0:
                     continue
                 c = jobL.pop()
-                cmdList = ["python3", dirN+ "/main.py",inName,c, lookup, snpF]
+                cmdList = ["python3", dirN+ "/main.py",inName,c, lookup, snpF,str(int(addTags))]
                 cmd = " ".join(cmdList)
                 p = Popen([cmd], shell = True)
                 if verbose:
@@ -190,7 +221,6 @@ Can't find genome fasta in the specified path.
     print(msg)
     exit()
 
-jobs = chrms.copy()
 ## Create a tmp directory
 try:
     os.mkdir('.tmp_bamrefine')
@@ -199,31 +229,45 @@ except FileExistsError:
     os.mkdir('.tmp_bamrefine')
 
 
-print('Started bam filtering\n')
+print('\nStarted bam filtering\n')
 os.chdir('.tmp_bamrefine')
+
+with open(chrmFname) as chrmF:
+    jobs = bamRefine_cy.createBypassBED(chrmF, chrms, snpF)
+jobs_c = jobs.copy()
+
 parallelParse(jobs, thread, lookup)
 
 print("Please wait...")
 time.sleep(10)
 
-print("Finished BAM filtering\nMerging BAM files...")
+print("Finished BAM filtering\n\nMerging BAM files...")
 
 
 
 ## samtools merge commands -------------
 with open('toMerge_bamlist.txt', 'w') as f:
-    for c in chrms:
+    for c in jobs_c:
         f.write(c+'.bam\n')
+    f.write('bypassed.bam\n')
 
 toMergeF = 'toMerge_bamlist.txt'
 merge_cmd = "samtools merge -b " + toMergeF + " -O BAM -@ "
 merge_cmd += " ".join([str(thread),ouName])
 
+bypass_cmd = "samtools view -b -L bypass.bed " + inName
+bypass_cmd += " > bypassed.bam"
+
 ## debugging stuff --------
-print(os.getcwd())
-print(merge_cmd)
+## print(os.getcwd())
+## print(merge_cmd)
 
 ### ----------------------
+
+bypassing = Popen([bypass_cmd], shell = True)
+
+while bypassing.poll() == None:
+    continue
 
 merging = Popen([merge_cmd], shell = True)
 
@@ -233,7 +277,7 @@ while merging.poll() == None:
 rehead_cmd = "samtools view -H " + inName + " | samtools reheader -P  - " + ouName
 rehead_cmd += " > rehead.bam" + " ; mv rehead.bam " + ouName
 
-print(rehead_cmd)
+## print(rehead_cmd)
 
 reheading = Popen([rehead_cmd], shell = True)
 
@@ -243,10 +287,36 @@ while reheading.poll() == None:
 print("Finished merging.")
 
 ### -----------------------------------
+
+## Wrapping up stats -----------------
+stats = []
+for statFile in glob.glob('./*_stats.txt'):
+    with open(statFile) as f:
+        stats.append(f.readline().strip().split(','))
+
+stats_5 = sum([int(x[0]) for x in stats])
+stats_3 = sum([int(x[1]) for x in stats])
+
+## print(stats)
+
+stats_msg = "\nmasked %d 5' and %d 3' positions in total"
+
+print(stats_msg % (stats_5, stats_3))
+
+stats_cmd = "cat *_stats.txt > all_stats.txt ; "
+stats_cmd += "ls *_stats.txt | grep -v all | sed 's/_stats.txt//g' > all_names.txt ; "
+stats_cmd += "paste all_names.txt all_stats.txt | "
+stats_cmd += "sort > " + ouName + "_bamrefine_stats.txt"
+
+os.system(stats_cmd)
+
+### ----------------------------------
+
 ## Cleaning up temp files -------------
 os.chdir('../')
 
-shutil.rmtree('.tmp_bamrefine')
+if not keeptmp:
+    shutil.rmtree('.tmp_bamrefine')
 
 ### ----------------------------------
 

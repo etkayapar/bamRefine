@@ -1,12 +1,15 @@
-.TH bamrefine 1 "6 July 19"
+.TH bamrefine 1 "7 May 2020"
 .SH NAME
-bamrefine \- Mask transition SNPs from a BAM file
+bamrefine \- Mask SNPs from a BAM file
 .SH SYNOPSIS
-\fB bamrefine \fP [OPTIONS][-v] <in.bam> <out.bam>
+\fB bamrefine \fP [OPTIONS][-vt] <in.bam> <out.bam>
 .SH DESCRIPTION
-\fBbamrefine\fP processes a BAM file to mask the transition SNPs
-if they are in a possible PMD (post-mortem damage) region and 
-therefore cannot be trusted as authentic SNPs.
+\fBbamrefine\fP processes a BAM file to mask the positions from an
+alignment if that read carries a variant position that could be affected
+by post-mortem damage (PMD). e.g. If a read carries a C/* position at its
+5' end or it carries a G/* position at its 3' end. The regions treated as 5'
+or 3' "end" is not pre-defined and should be provided to the program with its
+argument (see \fB-l\fP)
 .SS OPTIONS
 .TP
 \fB-s, --snps\fP
@@ -21,13 +24,26 @@ Path to genome .fasta for the program to fetch the chromosome
 names from.
 .TP
 \fB-l, --pmd-length-threshold\fP
-PMD length threshold. SNPs that are up to this far in any read
-will be evaluated and masked if it is a transition.
+PMD length threshold. Positions that are up to and including this far in any read
+will be evaluated and masked. There is no one-for-all default value that can be set,
+so it is highly recommended that you have a prior information about the PMD profiles of your
+libraries before you run \fBbamrefine\fP
 .SS FLAGS
-.TP
-\fB-h, --help\fP
-display a short help message inplace
 .TP
 \fB-v, --verbose\fP
 Verbose output of progress
+.TP
+\fB-t, --add-tags\fP
+Add tags to output BAM file related to masking statistics using
+optional fields in alignment records. e.g. ZC:Z:2,1 ZP:Z:0,5;68
+would mean that program masked 2 5' and 1 3' positions and they were at index 0,5 and 68 in the sequence.
+.TP
+\fB-k, --keep-tmp\fP
+Don't remove the temprorary run directory. It will include intermediate BAM files, cached SNPs, etc.
+this directory is under current working directory named as \fB.tmp_bamrefine\fP
+.TP
+\fB-h, --help\fP
+display a short help message inplace
+.SH AUTHOR
+Etka Yapar <etka.yapar@gmail.com>
 
