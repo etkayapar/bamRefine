@@ -1,0 +1,27 @@
+* Tasks
+** DONE Change BAM processing strategy [0/0]
+   CLOSED: [2020-05-07 Thu 22:05]
+    - Create a function that will [2/2]
+      - [X] create a bed file 
+            from the fasta index file. This will be useful
+            for having a complete BAM using samtools view after
+            filtering through the BAM and masking variants.
+
+      - [X] Use above created BED file to get the difference of
+            chromosomes that will be filtered through when reading
+            BAMS (the ones that are present in the SNP catalogue)
+            and all the chromosomes that could be possibly in the
+            BAMS.
+
+      - This way, the program won't even open the chromosomes that
+        are not present in the SNP catalogue (therefore won't ever 
+        be needed). Instead, these reads mapping to those chromosomes
+        will be retrieved by the created BED file in the first step,
+        and will be merged to the result when the processed chromosomes
+        are being merged together for the final output of the file.
+** DONE Change the masking strategegy
+   CLOSED: [2020-04-17 Fri 19:36]
+   - [X] Make the masker flag snps according to this rule:
+         If there is a variant containing "C" in 5' of the
+         read or if a variant contains "G" at in the 3' of
+         the read.

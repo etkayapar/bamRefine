@@ -8,6 +8,7 @@ inName = sys.argv[1]
 contig = sys.argv[2]
 lookup = sys.argv[3]
 snps = sys.argv[4]
+addTags = bool(int(sys.argv[5]))
 
 ## print(os.getcwd())
 ## os.chdir('tmp_bamrefine')
@@ -21,4 +22,4 @@ ouName = contig + ".bam"
 inBAM = pysam.AlignmentFile(inName, 'rb')
 ouBAM = pysam.AlignmentFile(ouName, 'wb', template=inBAM)
 
-processBAM(inBAM, ouBAM, snps, contig, lookup)
+processBAM(inBAM, ouBAM, snps, contig, lookup, addTags)

@@ -20,6 +20,32 @@ cdef isTransition(str ref,  str bamR):
     except KeyError:
         return False
 
+def isDangerous(var):
+    if ("C" in var) and ("G" in var):
+        return (True, 'both')
+    elif ("C" in var):
+        return (True, '0')
+    elif ("G" in var):
+        return (True, '1')
+    else:
+        return (False, None)
+
+def generateTags(snpList, sideList):
+    tag1 = ",".join([str(sideList.count(x)) for x in [0,1]])
+    tag1 = ('ZC',tag1)
+
+    sideSwitchI = "".join(str(x) for x in sideList).find('1')
+    tag2_1 = ",".join([str(x) for x in snpList[0:sideSwitchI]])
+    if sideSwitchI != -1:
+        tag2_2 = ",".join([str(x) for x in snpList[sideSwitchI:]])
+    else:
+        tag2_2 = ""
+    tag2 = tag2_1 + ";" + tag2_2
+    tag2 = ('ZP', tag2)
+
+    return [tag1, tag2]
+
+
 def parseBam(bamL, fields = ('chrm', 'pos', 'seq')):
     bamL = bamL.strip().split()
     allF = {
@@ -58,35 +84,38 @@ cpdef flagReads(snpLocDic, bamLine, look):
     cdef list inspectRange
 
     cdef list snpList = [] # store transitions pos. in the ends
+    cdef list sideList= [] # store mask sides of positions (5' or 3')
 
     if len(seq) > look:
-        inspectRange = list(range(start, start+look)) + list(range(end-look-1, end))
+        inspectRange = [list(range(start, start+look)) , list(range(end-look-1, end))]
     else:
-        inspectRange = list(range(start, end))
+        inspectRange = [list(range(start, end)), list(range(start, end))]
 
     #sys.displayhook(inspectRange)
-    for nt in inspectRange:
-        key = chrm + " " + str(nt)
-        try:
-            snp = snpLocDic[key]
-            if snp[ref] == seq[nt-start]:
-                continue
-            else:
+    for side in range(2):
+        for nt in inspectRange[side]:
+            key = chrm + " " + str(nt)
+            try:
+                snp = snpLocDic[side][key]
+                # if snp[ref] == seq[nt-start]:
+                #     continue
+                # else:
                 snpList.append(nt-start)
+                sideList.append(side)
 
-        except KeyError:
-            continue
+            except KeyError:
+                continue
 
     if len(snpList) > 0:
-        return ('mask', snpList)
+        return ('mask', snpList, sideList)
     else:
-        return ('nomask', snpList)
+        return ('nomask', snpList, sideList)
 
 def parseSNPs(fName):
     snpF = open(fName)
     # curC = 'chr1'
     # chrm = 'chr1'
-    snps = {}
+    snps = [{}, {}]
     if fName.endswith('.snp'):
         chrI = 1
         posI = 3
@@ -109,39 +138,19 @@ def parseSNPs(fName):
     for snp in snpF:
         snp = snp.strip().split()
         curC = snp[chrI]
-        if not isTransition(snp[refI], snp[altI]):
-            # ignoring transversions
+        dangerous, side = isDangerous([snp[refI], snp[altI]])
+        if not dangerous:
+            # ignoring otherwise
             continue
         key = curC + " " + snp[posI]
-        snps[key] = [snp[x] for x in [chrI, posI, refI, altI]]
-    snpF.close()
-    return snps
-
-
-def parseSNPs_old(fName):
-    snpF = open(fName)
-    # curC = 'chr1'
-    # chrm = 'chr1'
-    chrm = '1'
-    tmpS = []
-    snps = {}
-
-    for snp in snpF:
-        snp = snp.strip().split()
-        curC = snp[0]
-        if not isTransition(snp[2], snp[3]):
-            # ignoring transversions
-            continue
-        try:
-            snps[curC].append(snp[1:])
-        except KeyError:
-            snps[curC] = []
-            snps[curC].append(snp[1:])
+        if side != 'both':
+            snps[int(side)][key] = [snp[x] for x in [chrI, posI, refI, altI]]
+        else:
+            snps[0][key] = [snp[x] for x in [chrI, posI, refI, altI]]
+            snps[1][key] = [snp[x] for x in [chrI, posI, refI, altI]]
 
     snpF.close()
     return snps
-
-
 
 def snpMask(snps, samF):
 
@@ -178,7 +187,7 @@ def filterBAM(inAln, outAln, faultyReads):
             outAln.write(read)
 
 
-def processBAM(inBAM, ouBAM, snps, contig, lookup):
+def processBAM(inBAM, ouBAM, snps, contig, lookup, addTags = False):
 
     # cdef dict bamL
     cdef list m_pos
@@ -188,10 +197,13 @@ def processBAM(inBAM, ouBAM, snps, contig, lookup):
     cdef str q1
     lookup = int(lookup)
 
+    statsF = open(contig+"_stats.txt", 'w')
+    stats = [0,0]
+
     for read in inBAM.fetch(contig):
         bamL = read.to_dict()
         #print(bamL)
-        mask, m_pos = flagReads(snps, bamL, lookup)
+        mask, m_pos, m_side = flagReads(snps, bamL, lookup)
         if mask == 'mask':
             for p in m_pos:
                 # print('in read %s, position %d' % (bamL['name'], p))
@@ -201,6 +213,11 @@ def processBAM(inBAM, ouBAM, snps, contig, lookup):
                 bamL['qual'] = q1
                 # bamLine --> pysam.AlignedSegment
             bamL = pysam.AlignedSegment.from_dict(bamL, inBAM.header)
+            st = [m_side.count(x) for x in [0,1]]
+            for x in range(2):
+                stats[x] += st[x]
+            if addTags:
+                bamL.tags += generateTags(m_pos, m_side)
             ouBAM.write(bamL)
         elif mask == 'nomask':
             bamL = pysam.AlignedSegment.from_dict(bamL, inBAM.header)
@@ -208,8 +225,11 @@ def processBAM(inBAM, ouBAM, snps, contig, lookup):
         else:
             continue
 
+    ## statsF.write("5p_total," + "3p_total"+ '\n')
+    statsF.write(str(stats[0]) +  "," + str(stats[1]) + '\n')
     inBAM.close()
     ouBAM.close()
+    statsF.close()
 
 
 def handleSNPs(fName):
@@ -226,3 +246,24 @@ def handleSNPs(fName):
         f.close()
 
     return snps
+
+
+def createBypassBED(chrmF, chrms, snps):
+    snps = handleSNPs(snps)
+    s_chrms = set()
+
+    for i in range(2):
+        for snp in snps[i]:
+            s_chrms.add(snp.split()[0])
+
+
+    toBypass = set(chrms).difference(s_chrms)
+    toFilter = s_chrms
+    bed = [x.strip().split()[0:2] for x in chrmF.readlines()]
+    bed = [x for x in bed if x[0] in toBypass]
+    bed = ["\t".join([x[0], "0", x[1]]) for x in bed]
+    with open("bypass.bed", 'w') as bedF:
+        for line in bed:
+            bedF.write(line + '\n')
+
+    return list(toFilter)
