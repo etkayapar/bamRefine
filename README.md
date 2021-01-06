@@ -1,16 +1,92 @@
 # bamrefine
 
-## What is it?
+This is a BAM filtering/masking program that  masks the positions from an
+alignment if that read carries a variant position that could be affected
+by post-mortem damage (PMD). e.g. If a read carries a C/\* position at its
+5' end or it carries a G/\* position at its 3' end. The regions treated as 5'
+or 3' "end" is not pre-defined and should be provided to the program with its
+argument (see `-l` or `--pmd-length-threshold` parameter)
 
-This is a BAM filtering/masking program that conditionally masks
-transition SNPs from BAM reads. 
-
-It designed to be an alternative to hard clipping first N bases 
+It is designed to be an alternative to hard clipping first N bases 
 of BAM reads with the suspicion of those regions containing 
 non-authentic (post mortem damage artifact) SNPs, or 
-ignoring transition SNPs alltogether. Instead, bamrefine masks 
-only the transition SNPs in the possible PMD regions from both 
-ends of BAM reads (scope of the region specified by the user)
+ignoring transition SNPs alltogether. Thus, avoiding a substantial amount
+of data loss that is encountered when using mainstream pipelines.
+
+## Masking strategy
+
+Consider the following example.
+
+![](./figs/healthyAlignment_scaled.jpg)
+
+above, in the left, you see the table of 
+a theoretical SNP catalog with the 
+variant positions and minor and major alleles
+observed in a population. In the right,you see a theoretical alignment 
+of three paired end reads to the reference (orange) region covering all
+the variants listed on the left. Some reads match the reference, others
+carry variants (green).
+
+Below, a more realistic example for ancient DNA reads, in
+addition to the expected biological variation among the aligned
+reads, there is also unexpedted variants resulting from DNA damage
+at the ends of fragmented ancient DNA. 
+
+![](./figs/damagedAlignment_scaled.jpg)
+
+At the 5' ends, these damages will occur as C-\>T changes, and at the 
+3' ends they will appear as G-\>A changes. 
+
+![](./figs/PMD_smiley.jpg)
+
+
+Therefore, a C/\* variant in the table becomes a possible PMD source
+if the read overlaps with it at the reads 5' end, and this is also
+the case for a G/\* variant if a read overlaps with it at the 3' end.
+
+Bamrefine, first characterizes the input SNP collection into two tables
+as 5' end suspects and 3' end suspects:
+
+![](./figs/snpTables.jpg) 
+
+and then iterates over the reads in the BAM file searching for overlaps
+with the two suspect tables at the appropriate ends of the reads (overlaps
+with the 5' end of the read and the 5' table variants, 3' end of the reads 
+and the 3' table variants). Then if a read carries a suspected/dangerous variant 
+at the ends, the program masks those specific position in the read so that
+they won't interfere with the SNP calling for the downstream steps:
+
+![](./figs/maskingExample.jpg)
+
+
+As you can see at the right hand side example of the above picture, 
+there is still one unexpected 'A' (in red), it stayed unmasked even 
+though it is within the 3' end lookup range (indicated with
+double-headed arrow). This is because, 
+
+- there is no entry in the
+  SNP collection at that position of the genome. Meaning, since there
+  won't be any SNP calling concerning that specific locus, there is no
+  need to bother with unexpected variants like this.
+- `bamrefine` does not check the specific allele that a read
+  carries, rather does the masking based on the alignment overlap of the
+  reads ends and the "dangerous" positions in the SNP catalog. See the
+  5' end maskings at the  left part of above example: Even though the read
+  carries 'C' bases (not different from the reference), those 'C's are
+  still masked.
+
+This therefore means:
+
+- reads that do not overlap with the problematic variant 
+  positions at their ends will still provide information 
+  regarding the allele pool
+- you disregard unreliable information from
+  the alignments while preserving anything
+  else. i.e. If there is more than one variant spanning
+  a single read and one is a possible PMD source, by 
+  selectively masking the problematic position, you still
+  have the reliable information coming from the other 
+  position.
 
 ## Usage
 
@@ -24,29 +100,41 @@ ends of BAM reads (scope of the region specified by the user)
     are acceptable. For safety, dont mix and match two
     delimiters in the same file. For examples, see
     ```data/```
-  * `-g, --genome-fasta`: Path to genome fasta file. This
+  * `-p, --threads`: Threads to run the program in parallel.
+  * `-g, --ref-genome`: Path to genome fasta file. This
     is needed only for fetcing contig names. Genome should be
     indexed beforehand with `samtools faidx`.
   * `-l, --pmd-length-threshold`: N nucleotide region from
     both ends of a read to be treated as a possible PMD region.
-  * `-p, --threads`: Threads to run the program in parallel.
 
 ### Flags:
 
   * `-v, --verbose`: verbose output of progress.
+  * `-t, --add-tags`: Add tags to output BAM file related to masking statistics 
+    using optional fields in alignment records. e.g. `ZC:Z:2,1`  and `ZP:Z:0,5;68` 
+    would mean that the program masked 2 5' and 1 3' positions and they were at index 
+    0,5 and 68 in the read sequence.
+  * `-k, --keep-tmp`: Don't remove the temprorary run directory. It will include 
+    intermediate BAM files, cached SNPs, etc. this directory is under current 
+    working directory named as `.tmp_bamrefine`
+
   
 ## Dependencies
 
-This is a small program written in python3, so it requires pyton3.5
-or above. It has several python libraries that it depends
-on:
+Dist packages:
+
+  * `python3`
+  * `samtools`
+
+Python libraries:
 
   * `cython`
   * `pysam`
 
-Though this is not a dependency by any means, it is recommended that you
+Also, it is recommended that you
 have PMD related statistics (e.g. up to which position there is a high 
 risk of seeing a PMD artifact) regarding your libraries before you run this
 program on the BAM files because the `--pmd-length-threshold` parameter
-requires an user specified value for the program to run. This can be achieved
+requires an user specified value for the program to run, there is no defaul 
+value. This can be achieved
 by using [PMDtools](https://github.com/pontussk/PMDtools)
