@@ -254,23 +254,31 @@ def createBypassBED(inName, chrms, snps):
 
     for i in range(2):
         for snp in snps[i]:
-            s_chrms.add(snp.split()[0])
+            chrm = snp.split()[0]
+            if chrm in chrms:
+                s_chrms.add(snp.split()[0])
 
 
     toBypass = set(chrms).difference(s_chrms)
     toFilter = s_chrms
-    bed = pysam.idxstats(inName).split("\n")
-    bed = [x.split("\t")[0:2] for x in bed][:-2]
-    bed = [x for x in bed if x[0] in toBypass]
-    bed = ["\t".join([x[0], "0", x[1]]) for x in bed]
-    with open("bypass.bed", 'w') as bedF:
-        for line in bed:
-            bedF.write(line + '\n')
+    if toBypass != set():
+        bed = pysam.idxstats(inName).split("\n")
+        bed = [x.split("\t") for x in bed][:-2]
+        bed = [x[0:2] for x in bed if x[2] != '0']
+        bed = [x for x in bed if x[0] in toBypass]
+        bed = ["\t".join([x[0], "0", x[1]]) for x in bed]
+        with open("bypass.bed", 'w') as bedF:
+            for line in bed:
+                bedF.write(line + '\n')
+        bypass = True
+    else:
+        toFilter = chrms
+        bypass = False
 
-    return list(toFilter)
+    return (list(toFilter), bypass)
 
 def fetchChromosomes(inName):
-    idstats = pysam.idxstats(inName)
-    idstats = idstats.split("\n")
-    chrms = [x.split("\t")[0] for x in idstats][:-2] ## last two contigs are meaningless
+    idstats = pysam.idxstats(inName).split("\n")
+    idstats = [x.split("\t") for x in idstats][:-2] ## last two contigs are meaningless
+    chrms = [x[0] for x in idstats if x[2] != '0']
     return chrms
