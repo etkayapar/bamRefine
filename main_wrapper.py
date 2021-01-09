@@ -221,7 +221,7 @@ except FileExistsError:
 print('\nStarted bam filtering\n')
 os.chdir('.tmp_bamrefine')
 
-jobs = bamRefine_cy.createBypassBED(inName, chrms, snpF)
+jobs, bypass = bamRefine_cy.createBypassBED(inName, chrms, snpF)
 jobs_c = jobs.copy()
 
 parallelParse(jobs, thread, lookup)
@@ -237,7 +237,8 @@ print("Finished BAM filtering\n\nMerging BAM files...")
 with open('toMerge_bamlist.txt', 'w') as f:
     for c in jobs_c:
         f.write(c+'.bam\n')
-    f.write('bypassed.bam\n')
+    if bypass:
+        f.write('bypassed.bam\n')
 
 toMergeF = 'toMerge_bamlist.txt'
 # merge_cmd = "samtools merge -b " + toMergeF + " -O BAM -@ "
@@ -253,7 +254,8 @@ toMergeF = 'toMerge_bamlist.txt'
 ### ----------------------
 
 # bypassing = Popen([bypass_cmd], shell = True)
-pysam.view("-@", str(thread), "-L", "bypass.bed", "-b", "-o" "bypassed.bam", inName, catch_stdout=False) ##pysam bug
+if bypass:
+    pysam.view("-@", str(thread), "-L", "bypass.bed", "-b", "-o" "bypassed.bam", inName, catch_stdout=False) ##pysam bug
 
 # while bypassing.poll() == None:
 #     continue
