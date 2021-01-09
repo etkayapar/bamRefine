@@ -35,10 +35,11 @@ def generateTags(snpList, sideList):
     tag1 = ('ZC',tag1)
 
     sideSwitchI = "".join(str(x) for x in sideList).find('1')
-    tag2_1 = ",".join([str(x) for x in snpList[0:sideSwitchI]])
     if sideSwitchI != -1:
+        tag2_1 = ",".join([str(x) for x in snpList[0:sideSwitchI]])
         tag2_2 = ",".join([str(x) for x in snpList[sideSwitchI:]])
     else:
+        tag2_1 = ",".join([str(x) for x in snpList])
         tag2_2 = ""
     tag2 = tag2_1 + ";" + tag2_2
     tag2 = ('ZP', tag2)
