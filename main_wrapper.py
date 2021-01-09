@@ -240,11 +240,11 @@ with open('toMerge_bamlist.txt', 'w') as f:
     f.write('bypassed.bam\n')
 
 toMergeF = 'toMerge_bamlist.txt'
-merge_cmd = "samtools merge -b " + toMergeF + " -O BAM -@ "
-merge_cmd += " ".join([str(thread),ouName])
+# merge_cmd = "samtools merge -b " + toMergeF + " -O BAM -@ "
+# merge_cmd += " ".join([str(thread),ouName])
 
-bypass_cmd = "samtools view -b -L bypass.bed " + inName
-bypass_cmd += " > bypassed.bam"
+# bypass_cmd = "samtools view -b -L bypass.bed " + inName
+# bypass_cmd += " > bypassed.bam"
 
 ## debugging stuff --------
 ## print(os.getcwd())
@@ -252,25 +252,29 @@ bypass_cmd += " > bypassed.bam"
 
 ### ----------------------
 
-bypassing = Popen([bypass_cmd], shell = True)
+# bypassing = Popen([bypass_cmd], shell = True)
+pysam.view("-@", str(thread), "-L", "bypass.bed", "-b", "-o" "bypassed.bam", inName, catch_stdout=False) ##pysam bug
 
-while bypassing.poll() == None:
-    continue
+# while bypassing.poll() == None:
+#     continue
 
-merging = Popen([merge_cmd], shell = True)
+#merging = Popen([merge_cmd], shell = True)
+pysam.merge("-c", "-p", "-b" , toMergeF, "-O", "BAM", "-@", str(thread), ouName)
 
-while merging.poll() == None:
-    continue
+# while merging.poll() == None:
+#     continue
 
-rehead_cmd = "samtools view -H " + inName + " | samtools reheader -P  - " + ouName
-rehead_cmd += " > rehead.bam" + " ; mv rehead.bam " + ouName
+# rehead_cmd = "samtools view -H " + inName + " | samtools reheader -P  - " + ouName
+# rehead_cmd += " > rehead.bam" + " ; mv rehead.bam " + ouName
 
 ## print(rehead_cmd)
 
-reheading = Popen([rehead_cmd], shell = True)
+##reheading = Popen([rehead_cmd], shell = True)
+pysam.view("-H", "-o", "header.sam", inName, catch_stdout=False)
+pysam.reheader("-P",  "-i", "header.sam", ouName)
 
-while reheading.poll() == None:
-    continue
+# while reheading.poll() == None:
+#     continue
 
 print("Finished merging.")
 
