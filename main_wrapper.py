@@ -37,7 +37,6 @@ Usage: ./bamrefine [options] <in.bam> <out.bam>
 OPTIONS:
         -s, --snps                    BED  or SNP formatted file for snps
         -p, --threads                 # of threads to use
-        -g, --ref-genome              Path to ref. genome to fetch chr/contig names
         -l, --pmd-length-threshold    pmd length threshold
 FLAGS:
         -t, --add-tags                add maskings stats as optional SAM fields to the alignments
@@ -61,10 +60,9 @@ program's directory and run 'man ./bamrefine.1'
 
 try:
     options, remainder = getopt.gnu_getopt(sys.argv[1:],
-                                           's:p:g:l:tvhk',
+                                           's:p:l:tvhk',
                                            ['snps=',
                                            'threads=',
-                                            'ref-genome=',
                                             'pmd-length-threshold=',
                                             'add-tags',
                                            'verbose',
@@ -85,9 +83,6 @@ for opt, arg in options:
     elif opt in ('-l', '--pmd-length-threshold'):
         lookup = arg
         nOptions += 1
-    elif opt in ('-g', '--ref-genome'):
-        genomeF = arg
-        nOptions += 1
     elif opt in ('-t', '--add-tags'):
         addTags = True
     elif opt in ('-v', '--verbose'):
@@ -100,7 +95,7 @@ for opt, arg in options:
         usage()
 
 
-if nOptions != 4:
+if nOptions != 3:
     print("All options need arguments")
     usage()
 
@@ -119,15 +114,9 @@ if snpF.startswith('/'):
 else:
     snpF = './'+snpF
 
-if genomeF.startswith('/'):
-    pass
-else:
-    genomeF = './'+genomeF
-
 inName  = os.path.abspath(inName)
 ouName  = os.path.abspath(ouName)
 snpF    = os.path.abspath(snpF)
-genomeF = os.path.abspath(genomeF)
 
 
 
@@ -200,23 +189,23 @@ def parallelParse(jobL, n, lookup):
     while len([i for i in range(n) if activeJobs[i].poll() != None]) < len(activeJobs):
         continue
 
-if genomeF == None:
-    with open(chrmFname) as chrmF:
-        chrms = [x.strip() for x in chrmF.readlines()]
-elif os.path.isfile(genomeF+".fai"):
-    print("Fetching Chromosomes from fasta...")
-    chrmFname = genomeF+".fai"
-    with open(chrmFname) as chrmF:
-        chrms = [x.strip().split()[0] for x in chrmF.readlines()]
+if os.path.isfile(inName+".bai"):
+    print("Fetching Chromosomes")
+    chrms = bamRefine_cy.fetchChromosomes(inName)
     print("Done.")
-elif os.path.isfile(genomeF):
+elif os.path.isfile(inName):
     msg = '''
-Genome fasta is not indexed. Please index your genome with
-samtools faidx
+    input BAM is not currently indexed. Indexing...
     '''
+    print(msg)
+    pysam.index("-@ " + str(thread), inName)
+    print("Done.")
+    chrms = bamRefine_cy.fetchChromosomes(inName)
+    print("Fetching Chromosomes")
+    print("Done.")
 else:
     msg = '''
-Can't find genome fasta in the specified path.
+Can't find input BAM in the specified path.
     '''
     print(msg)
     exit()
@@ -232,8 +221,7 @@ except FileExistsError:
 print('\nStarted bam filtering\n')
 os.chdir('.tmp_bamrefine')
 
-with open(chrmFname) as chrmF:
-    jobs = bamRefine_cy.createBypassBED(chrmF, chrms, snpF)
+jobs = bamRefine_cy.createBypassBED(inName, chrms, snpF)
 jobs_c = jobs.copy()
 
 parallelParse(jobs, thread, lookup)
