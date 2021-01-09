@@ -248,7 +248,7 @@ def handleSNPs(fName):
     return snps
 
 
-def createBypassBED(chrmF, chrms, snps):
+def createBypassBED(inName, chrms, snps):
     snps = handleSNPs(snps)
     s_chrms = set()
 
@@ -259,7 +259,8 @@ def createBypassBED(chrmF, chrms, snps):
 
     toBypass = set(chrms).difference(s_chrms)
     toFilter = s_chrms
-    bed = [x.strip().split()[0:2] for x in chrmF.readlines()]
+    bed = pysam.idxstats(inName).split("\n")
+    bed = [x.split("\t")[0:2] for x in bed][:-2]
     bed = [x for x in bed if x[0] in toBypass]
     bed = ["\t".join([x[0], "0", x[1]]) for x in bed]
     with open("bypass.bed", 'w') as bedF:
@@ -267,3 +268,9 @@ def createBypassBED(chrmF, chrms, snps):
             bedF.write(line + '\n')
 
     return list(toFilter)
+
+def fetchChromosomes(inName):
+    idstats = pysam.idxstats(inName)
+    idstats = idstats.split("\n")
+    chrms = [x.split("\t")[0] for x in idstats][:-2] ## last two contigs are meaningless
+    return chrms
