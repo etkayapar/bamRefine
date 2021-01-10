@@ -227,7 +227,7 @@ def processBAM(inBAM, ouBAM, snps, contig, lookup, addTags = False):
             continue
 
     ## statsF.write("5p_total," + "3p_total"+ '\n')
-    statsF.write(str(stats[0]) +  "," + str(stats[1]) + '\n')
+    statsF.write(str(stats[0]) +  "\t" + str(stats[1]) + '\n')
     inBAM.close()
     ouBAM.close()
     statsF.close()
