@@ -95,36 +95,27 @@ This therefore means:
 ### Parameters:
 
   * `-s, --snps`: SNP collection file. This can be either
-    4/5 column BED or SNP formatted files. Fields/columns
-    can be either tab separated or space delimited. Both
-    are acceptable. For safety, dont mix and match two
-    delimiters in the same file. For examples, see
-    ```data/```
+    4/5 column BED (genomic position [with or without the `start` position column] + 
+    Minor and Major allele) or SNP (that of PLINK) formatted files. Format 
+    distinction is done by checking the file extension so it is important that
+    the input file follows the format of the extension it has.
   * `-p, --threads`: Threads to run the program in parallel.
-  * `-g, --ref-genome`: Path to genome fasta file. This
-    is needed only for fetcing contig names. Genome should be
-    indexed beforehand with `samtools faidx`.
   * `-l, --pmd-length-threshold`: N nucleotide region from
     both ends of a read to be treated as a possible PMD region.
 
 ### Flags:
 
   * `-v, --verbose`: verbose output of progress.
-  * `-t, --add-tags`: Add tags to output BAM file related to masking statistics 
-    using optional fields in alignment records. e.g. `ZC:Z:2,1`  and `ZP:Z:0,5;68` 
-    would mean that the program masked 2 5' and 1 3' positions and they were at index 
+  * `-t, --add-tags`: Add tags to reads in output BAM file related to masking statistics 
+    using optional SAM fields in alignment records. e.g. `ZC:Z:2,1`  and `ZP:Z:0,5;68` 
+    would mean that the program masked n=2 5' and n=1 3' positions and they were at index 
     0,5 and 68 in the read sequence.
   * `-k, --keep-tmp`: Don't remove the temprorary run directory. It will include 
-    intermediate BAM files, cached SNPs, etc. this directory is under current 
-    working directory named as `.tmp_bamrefine`
+    intermediate BAM files, cached SNPs, etc. this directory is under the same
+    directory with specified ouptut BAM, named as `.YYYY-MM-DD_HH-MM-SS_<out.bam>_tmp_bamrefine`
 
   
 ## Dependencies
-
-Dist packages:
-
-  * `python3`
-  * `samtools`
 
 Python libraries:
 
