@@ -1496,8 +1496,8 @@ static const char __pyx_k_wb[] = "wb";
 static const char __pyx_k__10[] = " ";
 static const char __pyx_k__11[] = "|";
 static const char __pyx_k__14[] = "!";
-static const char __pyx_k__15[] = "\n";
-static const char __pyx_k__16[] = "\t";
+static const char __pyx_k__15[] = "\t";
+static const char __pyx_k__16[] = "\n";
 static const char __pyx_k__26[] = "_";
 static const char __pyx_k_aln[] = "aln";
 static const char __pyx_k_alt[] = "alt";
@@ -7099,7 +7099,7 @@ static PyObject *__pyx_pf_12bamRefine_cy_14processBAM(CYTHON_UNUSED PyObject *__
   /* "bamRefine_cy.pyx":230
  * 
  *     ## statsF.write("5p_total," + "3p_total"+ '\n')
- *     statsF.write(str(stats[0]) +  "," + str(stats[1]) + '\n')             # <<<<<<<<<<<<<<
+ *     statsF.write(str(stats[0]) +  "\t" + str(stats[1]) + '\n')             # <<<<<<<<<<<<<<
  *     inBAM.close()
  *     ouBAM.close()
  */
@@ -7110,7 +7110,7 @@ static PyObject *__pyx_pf_12bamRefine_cy_14processBAM(CYTHON_UNUSED PyObject *__
   __pyx_t_6 = __Pyx_PyObject_CallOneArg(((PyObject *)(&PyUnicode_Type)), __pyx_t_7); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 230, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_7 = __Pyx_PyUnicode_Concat(__pyx_t_6, __pyx_kp_u__5); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 230, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyUnicode_Concat(__pyx_t_6, __pyx_kp_u__15); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 230, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __pyx_t_6 = __Pyx_GetItemInt_List(__pyx_v_stats, 1, long, 1, __Pyx_PyInt_From_long, 1, 0, 1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 230, __pyx_L1_error)
@@ -7122,7 +7122,7 @@ static PyObject *__pyx_pf_12bamRefine_cy_14processBAM(CYTHON_UNUSED PyObject *__
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-  __pyx_t_8 = __Pyx_PyUnicode_Concat(__pyx_t_6, __pyx_kp_u__15); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 230, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyUnicode_Concat(__pyx_t_6, __pyx_kp_u__16); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 230, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __pyx_t_6 = NULL;
@@ -7145,7 +7145,7 @@ static PyObject *__pyx_pf_12bamRefine_cy_14processBAM(CYTHON_UNUSED PyObject *__
 
   /* "bamRefine_cy.pyx":231
  *     ## statsF.write("5p_total," + "3p_total"+ '\n')
- *     statsF.write(str(stats[0]) +  "," + str(stats[1]) + '\n')
+ *     statsF.write(str(stats[0]) +  "\t" + str(stats[1]) + '\n')
  *     inBAM.close()             # <<<<<<<<<<<<<<
  *     ouBAM.close()
  *     statsF.close()
@@ -7170,7 +7170,7 @@ static PyObject *__pyx_pf_12bamRefine_cy_14processBAM(CYTHON_UNUSED PyObject *__
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "bamRefine_cy.pyx":232
- *     statsF.write(str(stats[0]) +  "," + str(stats[1]) + '\n')
+ *     statsF.write(str(stats[0]) +  "\t" + str(stats[1]) + '\n')
  *     inBAM.close()
  *     ouBAM.close()             # <<<<<<<<<<<<<<
  *     statsF.close()
@@ -8043,7 +8043,7 @@ static PyObject *__pyx_pf_12bamRefine_cy_18createBypassBED(CYTHON_UNUSED PyObjec
         __Pyx_DECREF_SET(__pyx_t_7, function);
       }
     }
-    __pyx_t_3 = (__pyx_t_2) ? __Pyx_PyObject_Call2Args(__pyx_t_7, __pyx_t_2, __pyx_kp_u__15) : __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_kp_u__15);
+    __pyx_t_3 = (__pyx_t_2) ? __Pyx_PyObject_Call2Args(__pyx_t_7, __pyx_t_2, __pyx_kp_u__16) : __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_kp_u__16);
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
     if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 266, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
@@ -8114,7 +8114,7 @@ static PyObject *__pyx_pf_12bamRefine_cy_18createBypassBED(CYTHON_UNUSED PyObjec
             __Pyx_DECREF_SET(__pyx_t_1, function);
           }
         }
-        __pyx_t_2 = (__pyx_t_11) ? __Pyx_PyObject_Call2Args(__pyx_t_1, __pyx_t_11, __pyx_kp_u__16) : __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_kp_u__16);
+        __pyx_t_2 = (__pyx_t_11) ? __Pyx_PyObject_Call2Args(__pyx_t_1, __pyx_t_11, __pyx_kp_u__15) : __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_kp_u__15);
         __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
         if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 267, __pyx_L11_error)
         __Pyx_GOTREF(__pyx_t_2);
@@ -8346,7 +8346,7 @@ static PyObject *__pyx_pf_12bamRefine_cy_18createBypassBED(CYTHON_UNUSED PyObjec
         PyList_SET_ITEM(__pyx_t_11, 2, __pyx_t_1);
         __pyx_t_2 = 0;
         __pyx_t_1 = 0;
-        __pyx_t_1 = PyUnicode_Join(__pyx_kp_u__16, __pyx_t_11); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 270, __pyx_L31_error)
+        __pyx_t_1 = PyUnicode_Join(__pyx_kp_u__15, __pyx_t_11); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 270, __pyx_L31_error)
         __Pyx_GOTREF(__pyx_t_1);
         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
         if (unlikely(__Pyx_ListComp_Append(__pyx_t_7, (PyObject*)__pyx_t_1))) __PYX_ERR(0, 270, __pyx_L31_error)
@@ -8435,7 +8435,7 @@ static PyObject *__pyx_pf_12bamRefine_cy_18createBypassBED(CYTHON_UNUSED PyObjec
  */
               __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_bedF, __pyx_n_s_write); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 273, __pyx_L39_error)
               __Pyx_GOTREF(__pyx_t_3);
-              __pyx_t_11 = PyNumber_Add(__pyx_v_line, __pyx_kp_u__15); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 273, __pyx_L39_error)
+              __pyx_t_11 = PyNumber_Add(__pyx_v_line, __pyx_kp_u__16); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 273, __pyx_L39_error)
               __Pyx_GOTREF(__pyx_t_11);
               __pyx_t_2 = NULL;
               if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_3))) {
@@ -8727,7 +8727,7 @@ static PyObject *__pyx_pf_12bamRefine_cy_20fetchChromosomes(CYTHON_UNUSED PyObje
       __Pyx_DECREF_SET(__pyx_t_4, function);
     }
   }
-  __pyx_t_1 = (__pyx_t_2) ? __Pyx_PyObject_Call2Args(__pyx_t_4, __pyx_t_2, __pyx_kp_u__15) : __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_kp_u__15);
+  __pyx_t_1 = (__pyx_t_2) ? __Pyx_PyObject_Call2Args(__pyx_t_4, __pyx_t_2, __pyx_kp_u__16) : __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_kp_u__16);
   __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
   if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 282, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -8798,7 +8798,7 @@ static PyObject *__pyx_pf_12bamRefine_cy_20fetchChromosomes(CYTHON_UNUSED PyObje
           __Pyx_DECREF_SET(__pyx_t_3, function);
         }
       }
-      __pyx_t_2 = (__pyx_t_7) ? __Pyx_PyObject_Call2Args(__pyx_t_3, __pyx_t_7, __pyx_kp_u__16) : __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_kp_u__16);
+      __pyx_t_2 = (__pyx_t_7) ? __Pyx_PyObject_Call2Args(__pyx_t_3, __pyx_t_7, __pyx_kp_u__15) : __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_kp_u__15);
       __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
       if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 283, __pyx_L5_error)
       __Pyx_GOTREF(__pyx_t_2);

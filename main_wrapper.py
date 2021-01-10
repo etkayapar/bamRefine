@@ -286,7 +286,7 @@ print("Finished merging.")
 stats = []
 for statFile in glob.glob('./*_stats.txt'):
     with open(statFile) as f:
-        stats.append(f.readline().strip().split(','))
+        stats.append(f.readline().strip().split('\t'))
 
 stats_5 = sum([int(x[0]) for x in stats])
 stats_3 = sum([int(x[1]) for x in stats])
@@ -300,7 +300,7 @@ print(stats_msg % (stats_5, stats_3))
 stats_cmd = "cat *_stats.txt > all_stats.txt ; "
 stats_cmd += "ls *_stats.txt | grep -v all | sed 's/_stats.txt//g' > all_names.txt ; "
 stats_cmd += "paste all_names.txt all_stats.txt | "
-stats_cmd += "sort > " + ouName + "_bamrefine_stats.txt"
+stats_cmd += "sort -n -k1 > " + ouName + "_bamrefine_stats.txt"
 
 os.system(stats_cmd)
 
