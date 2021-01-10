@@ -10,6 +10,7 @@ import bamRefine_cy
 import pickle
 import shutil
 import glob
+from datetime import datetime
 
 
 dirN = os.path.dirname(os.path.realpath(__file__))#dirname of the script
@@ -117,7 +118,7 @@ else:
 inName  = os.path.abspath(inName)
 ouName  = os.path.abspath(ouName)
 snpF    = os.path.abspath(snpF)
-
+ouDir   = os.path.dirname(ouName)
 
 
 ## ----------------------------------------------------------------
@@ -212,14 +213,17 @@ Can't find input BAM in the specified path.
 
 ## Create a tmp directory
 try:
-    os.mkdir('.tmp_bamrefine')
+    now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    oubase = os.path.basename(ouName)
+    tmpname = "".join([ouDir, "/.", now,"_", oubase, "_tmp_bamrefine"])
+    os.mkdir(tmpname)
 except FileExistsError:
-    shutil.rmtree('.tmp_bamrefine')
-    os.mkdir('.tmp_bamrefine')
+    shutil.rmtree(tmpname)
+    os.mkdir(tmpname)
 
 
 print('\nStarted bam filtering\n')
-os.chdir('.tmp_bamrefine')
+os.chdir(tmpname)
 
 jobs, bypass = bamRefine_cy.createBypassBED(inName, chrms, snpF)
 jobs_c = jobs.copy()
@@ -310,7 +314,7 @@ os.system(stats_cmd)
 os.chdir('../')
 
 if not keeptmp:
-    shutil.rmtree('.tmp_bamrefine')
+    shutil.rmtree(tmpname)
 
 ### ----------------------------------
 
