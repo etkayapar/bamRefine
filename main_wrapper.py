@@ -122,38 +122,20 @@ ouDir   = os.path.dirname(ouName)
 
 
 ## ----------------------------------------------------------------
+def waitJobs(runningJobs):
+    while len([i for i in runningJobs if i.poll() != None]) < len(runningJobs):
+        continue
 
 def parallelParse(jobL, n, lookup):
     activeJobs = []
     jobN = []
     global snpF
 
-    ## careful with this part ------------------------------------
-
-    '''
-    Run the first contig independent of the parallelism
-    for the SNP pickle file not being written to and reading
-    from at the same time, it causes errors.
-    '''
-
-    firstC = jobL.pop()
-    cmdList = ["python3", dirN+ "/main.py",inName,firstC, lookup, snpF, str(int(addTags))]
-    cmd = " ".join(cmdList)
-    firstCjob = Popen([cmd], shell = True)
-    ## activeJobs.append(p)
-    ## jobN.append(c)
-
-    while firstCjob.poll() != None: # wait until it finishes
-        continue
-
-    del([cmdList, cmd, firstCjob, firstC])
-
-    ### ----------------------------------------------------------
-
     for i in range(n):
         try:
             c = jobL.pop()
         except IndexError:
+            waitJobs(activeJobs)
             return None
 
         cmdList = ["python3", dirN+ "/main.py",inName,c, lookup, snpF, str(int(addTags))]
@@ -173,6 +155,8 @@ def parallelParse(jobL, n, lookup):
         n_f = len(finished)
         if n_f > 0:
             for i in finished:
+                if verbose:
+                    print("Finished job for chr%s" % jobN[i])
                 if len(jobL) == 0:
                     continue
                 c = jobL.pop()
@@ -180,15 +164,12 @@ def parallelParse(jobL, n, lookup):
                 cmd = " ".join(cmdList)
                 p = Popen([cmd], shell = True)
                 if verbose:
-                    print("Finished job for chr%s" % jobN[i])
                     print("Started job for chr%s" % c)
                 activeJobs[i] = p
                 jobN[i] = c
 
+    waitJobs(activeJobs)
 
-
-    while len([i for i in range(n) if activeJobs[i].poll() != None]) < len(activeJobs):
-        continue
 
 if os.path.isfile(inName+".bai"):
     print("Fetching Chromosomes")
@@ -231,7 +212,7 @@ jobs_c = jobs.copy()
 parallelParse(jobs, thread, lookup)
 
 print("Please wait...")
-time.sleep(10)
+##time.sleep(10)
 
 print("Finished BAM filtering\n\nMerging BAM files...")
 
@@ -259,13 +240,13 @@ toMergeF = 'toMerge_bamlist.txt'
 
 # bypassing = Popen([bypass_cmd], shell = True)
 if bypass:
-    pysam.view("-@", str(thread), "-L", "bypass.bed", "-b", "-o" "bypassed.bam", inName, catch_stdout=False) ##pysam bug
+    pysam.view("-@", str(thread), "--no-PG", "-L", "bypass.bed", "-b", "-o" "bypassed.bam", inName, catch_stdout=False) ##pysam bug
 
 # while bypassing.poll() == None:
 #     continue
 
 #merging = Popen([merge_cmd], shell = True)
-pysam.merge("-c", "-p", "-b" , toMergeF, "-O", "BAM", "-@", str(thread), ouName)
+pysam.merge("--no-PG", "-c", "-p", "-b" , toMergeF, "-O", "BAM", "-@", str(thread), ouName)
 
 # while merging.poll() == None:
 #     continue
@@ -276,8 +257,8 @@ pysam.merge("-c", "-p", "-b" , toMergeF, "-O", "BAM", "-@", str(thread), ouName)
 ## print(rehead_cmd)
 
 ##reheading = Popen([rehead_cmd], shell = True)
-pysam.view("-H", "-o", "header.sam", inName, catch_stdout=False)
-pysam.reheader("-P",  "-i", "header.sam", ouName)
+# pysam.view("-H", "-o", "header.sam", inName, catch_stdout=False)
+# pysam.reheader("-P",  "-i", "header.sam", ouName)
 
 # while reheading.poll() == None:
 #     continue
