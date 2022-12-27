@@ -64,7 +64,7 @@ def parseBam(bamL, fields = ('chrm', 'pos', 'seq')):
 
 # Parse snp catalogue
 
-cpdef flagReads(snpLocDic, bamLine, look):
+def flagReads(snpLocDic, bamLine, look, bamRecord):
 
     '''
     Find if there is a snp in the loaded SNP catalogue
@@ -79,7 +79,7 @@ cpdef flagReads(snpLocDic, bamLine, look):
     cdef int end = start + len(seq) #end variable is 1 more then actual end position for ease of use in range() calls
     cdef int ref = 2
     cdef int alt = 3
-    cdef int nt
+    #cdef int nt
     #cdef str key
     cdef list snp
     cdef list inspectRange
@@ -87,21 +87,33 @@ cpdef flagReads(snpLocDic, bamLine, look):
     cdef list snpList = [] # store transitions pos. in the ends
     cdef list sideList= [] # store mask sides of positions (5' or 3')
 
-    if len(seq) > look:
-        inspectRange = [list(range(start, start+look)) , list(range(end-look-1, end))]
+    refpos = bamRecord.get_reference_positions(full_length=True)
+    refpos = [x + 1 if x is not None else x for x in refpos] ## pysam uses 0-based indices
+    # first_in_read = refpos.find(next((item for item in refpos if item is not None)))
+    # last_in_read =  refpos.find(next((item for item in refpos[::-1] if item is not None)))
+    ##read_len = last_in_read - first_in_read + 1 ### well this is not true...
+    read_len = len(seq)
+    ## Lookup range should be about the physical first N bases in the read, not the first
+    ## N reference bases. I will assume this until I finish implementing this feature.
+    ## this might change later.
+    if read_len > look:
+        inspectRange = [refpos[:look], refpos[read_len-1:read_len-look-1:-1]]
     else:
-        inspectRange = [list(range(start, end)), list(range(start, end))]
+        inspectRange = [refpos, refpos]
 
-    #sys.displayhook(inspectRange)
     for side in range(2):
-        for nt in inspectRange[side]:
+        for i, nt in enumerate(inspectRange[side]):
+            shift = [0,1][side] 
+            sign = [1,-1][side]
+            i = i + shift
+            i = i * sign ### get indices for the 3' end
             key = chrm + " " + str(nt)
             try:
                 snp = snpLocDic[side][key]
                 # if snp[ref] == seq[nt-start]:
                 #     continue
                 # else:
-                snpList.append(nt-start)
+                snpList.append(i)
                 sideList.append(side)
 
             except KeyError:
@@ -204,7 +216,7 @@ def processBAM(inBAM, ouBAM, snps, contig, lookup, addTags = False):
     for read in inBAM.fetch(contig):
         bamL = read.to_dict()
         #print(bamL)
-        mask, m_pos, m_side = flagReads(snps, bamL, lookup)
+        mask, m_pos, m_side = flagReads(snps, bamL, lookup, read)
         if mask == 'mask':
             for p in m_pos:
                 # print('in read %s, position %d' % (bamL['name'], p))
