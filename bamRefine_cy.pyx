@@ -72,26 +72,16 @@ def flagReads(snpLocDic, bamLine, look, bamRecord):
     SAM/BAM read contains a SNP.
     '''
 
-    # chrm, start, seq = bamLine
     cdef str chrm = bamLine['ref_name']
-    cdef int start = int(bamLine['ref_pos'])
     cdef str seq = bamLine['seq']
-    cdef int end = start + len(seq) #end variable is 1 more then actual end position for ease of use in range() calls
-    cdef int ref = 2
-    cdef int alt = 3
-    #cdef int nt
-    #cdef str key
     cdef list snp
     cdef list inspectRange
 
-    cdef list snpList = [] # store transitions pos. in the ends
+    cdef list snpList = [] # store positions to be masked
     cdef list sideList= [] # store mask sides of positions (5' or 3')
 
     refpos = bamRecord.get_reference_positions(full_length=True)
     refpos = [x + 1 if x is not None else x for x in refpos] ## pysam uses 0-based indices
-    # first_in_read = refpos.find(next((item for item in refpos if item is not None)))
-    # last_in_read =  refpos.find(next((item for item in refpos[::-1] if item is not None)))
-    ##read_len = last_in_read - first_in_read + 1 ### well this is not true...
     read_len = len(seq)
     ## Lookup range should be about the physical first N bases in the read, not the first
     ## N reference bases. I will assume this until I finish implementing this feature.
@@ -110,9 +100,6 @@ def flagReads(snpLocDic, bamLine, look, bamRecord):
             key = chrm + " " + str(nt)
             try:
                 snp = snpLocDic[side][key]
-                # if snp[ref] == seq[nt-start]:
-                #     continue
-                # else:
                 snpList.append(i)
                 sideList.append(side)
 
