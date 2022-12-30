@@ -96,8 +96,9 @@ def flagReads(snpLocDic, bamLine, look_l, look_r, bamRecord):
 
     ## Adjust if read is too short for the lookup values from either side:
     for side in range(2):
-        if read_len < look_list[side]:
-            inspectRange[side] = refpos
+        sign = [1,-1][side]
+        if read_len <= look_list[side]:
+            inspectRange[side] = refpos[::sign] ## reverse the pos list if 3' end
 
     for side in range(2):
         for i, nt in enumerate(inspectRange[side]):
