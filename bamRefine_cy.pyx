@@ -64,7 +64,7 @@ def parseBam(bamL, fields = ('chrm', 'pos', 'seq')):
 
 # Parse snp catalogue
 
-def flagReads(snpLocDic, bamLine, look, bamRecord):
+def flagReads(snpLocDic, bamLine, look_l, look_r, bamRecord):
 
     '''
     Find if there is a snp in the loaded SNP catalogue
@@ -80,16 +80,24 @@ def flagReads(snpLocDic, bamLine, look, bamRecord):
     cdef list snpList = [] # store positions to be masked
     cdef list sideList= [] # store mask sides of positions (5' or 3')
 
+    ## make look_l = look_r if the latter not set:
+    look_r = {True: look_l, False: look_r}[not look_r] 
+    look_list = [look_l, look_r]
+
     refpos = bamRecord.get_reference_positions(full_length=True)
     refpos = [x + 1 if x is not None else x for x in refpos] ## pysam uses 0-based indices
     read_len = len(seq)
     ## Lookup range should be about the physical first N bases in the read, not the first
     ## N reference bases. I will assume this until I finish implementing this feature.
     ## this might change later.
-    if read_len > look:
-        inspectRange = [refpos[:look], refpos[read_len-1:read_len-look-1:-1]]
-    else:
-        inspectRange = [refpos, refpos]
+
+    ## Default inspectRange:
+    inspectRange = [refpos[:look_l], refpos[read_len-1:read_len-look_r-1:-1]]
+
+    ## Adjust if read is too short for the lookup values from either side:
+    for side in range(2):
+        if read_len < look_list[side]:
+            inspectRange[side] = refpos
 
     for side in range(2):
         for i, nt in enumerate(inspectRange[side]):
@@ -195,7 +203,12 @@ def processBAM(inBAM, ouBAM, snps, contig, lookup, addTags = False):
     cdef str t1
     cdef list q
     cdef str q1
-    lookup = int(lookup)
+    lookup = lookup.split(",")
+    lookup_l = int(lookup[0])
+    try:
+        lookup_r = int(lookup[1])
+    except IndexError:
+        lookup_r = None
 
     statsF = open(contig+"_stats.txt", 'w')
     stats = [0,0]
@@ -203,7 +216,7 @@ def processBAM(inBAM, ouBAM, snps, contig, lookup, addTags = False):
     for read in inBAM.fetch(contig):
         bamL = read.to_dict()
         #print(bamL)
-        mask, m_pos, m_side = flagReads(snps, bamL, lookup, read)
+        mask, m_pos, m_side = flagReads(snps, bamL, lookup_l, lookup_r, read)
         if mask == 'mask':
             for p in m_pos:
                 # print('in read %s, position %d' % (bamL['name'], p))
