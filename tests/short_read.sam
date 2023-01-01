@@ -1,0 +1,7 @@
+@HD	VN:1.0	SO:coordinate
+@SQ	SN:1	LN:249250621
+@RG	ID:cov10_sim1.all	PL:ILLUMINA	SM:cov10_sim1.all
+@PG	ID:graph_aligner	VN:0.12.5	CL:sbg-aligner-latest -f SBG.Graph.B37.V7.dev2.chr1.fa -v SBG.Graph.B37.V7.dev2.chr1.vcf.gz -q cov10_sim1.all.fastq.gz -o cov10_sim1.all.bam -t 32 -P ILLUMINA -I cov10_sim1.all -S cov10_sim1.all 
+@PG	ID:samtools	PN:samtools	PP:graph_aligner	VN:1.15.1	CL:samtools view -b -N random_reads.txt ../../cov10_sim1_withCigars.bam
+@PG	ID:samtools.1	PN:samtools	PP:samtools	VN:1.15.1	CL:samtools view -h random_reads.bam
+test_short_read	16	1	237464529	60	9M	*	0	0	TCTTTATGC	]]]]]]]]]	NM:i:0	UQ:i:6	YQ:i:34	Yq:i:0	RG:Z:cov10_sim1.all
