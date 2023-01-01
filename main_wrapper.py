@@ -211,9 +211,6 @@ jobs_c = jobs.copy()
 
 parallelParse(jobs, thread, lookup)
 
-print("Please wait...")
-##time.sleep(10)
-
 print("Finished BAM filtering\n\nMerging BAM files...")
 
 
@@ -226,37 +223,13 @@ with open('toMerge_bamlist.txt', 'w') as f:
         f.write('bypassed.bam\n')
 
 toMergeF = 'toMerge_bamlist.txt'
-# merge_cmd = "samtools merge -b " + toMergeF + " -O BAM -@ "
-# merge_cmd += " ".join([str(thread),ouName])
-
-# bypass_cmd = "samtools view -b -L bypass.bed " + inName
-# bypass_cmd += " > bypassed.bam"
-
-## debugging stuff --------
-## print(os.getcwd())
-## print(merge_cmd)
-
 ### ----------------------
 
-# bypassing = Popen([bypass_cmd], shell = True)
 if bypass:
     pysam.view("-@", str(thread), "--no-PG", "-L", "bypass.bed", "-b", "-o" "bypassed.bam", inName, catch_stdout=False) ##pysam bug
 
-# while bypassing.poll() == None:
-#     continue
-
-#merging = Popen([merge_cmd], shell = True)
 pysam.merge("--no-PG", "-c", "-p", "-b" , toMergeF, "-O", "BAM", "-@", str(thread), ouName)
 
-# while merging.poll() == None:
-#     continue
-
-# rehead_cmd = "samtools view -H " + inName + " | samtools reheader -P  - " + ouName
-# rehead_cmd += " > rehead.bam" + " ; mv rehead.bam " + ouName
-
-## print(rehead_cmd)
-
-##reheading = Popen([rehead_cmd], shell = True)
 # pysam.view("-H", "-o", "header.sam", inName, catch_stdout=False)
 # pysam.reheader("-P",  "-i", "header.sam", ouName)
 
@@ -276,8 +249,6 @@ for statFile in glob.glob('./*_stats.txt'):
 stats_5 = sum([int(x[0]) for x in stats])
 stats_3 = sum([int(x[1]) for x in stats])
 
-## print(stats)
-
 stats_msg = "\nmasked %d 5' and %d 3' positions in total"
 
 print(stats_msg % (stats_5, stats_3))
@@ -296,7 +267,6 @@ os.chdir('../')
 
 if not keeptmp:
     shutil.rmtree(tmpname)
-
 ### ----------------------------------
 
 print("Program finished successfully.")
