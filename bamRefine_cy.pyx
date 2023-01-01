@@ -4,22 +4,6 @@ import pickle
 import sys
 import subprocess as sp
 
-cdef isTransition(str ref,  str bamR):
-
-    table = {
-        'A': 'G',
-        'T': 'C',
-        'G': 'A',
-        'C': 'T'}
-
-    try:
-        if bamR == table[ref]:
-            return True
-        else:
-            return False
-    except KeyError:
-        return False
-
 def isDangerous(var):
     if ("C" in var) and ("G" in var):
         return (True, 'both')
@@ -46,23 +30,6 @@ def generateTags(snpList, sideList):
 
     return [tag1, tag2]
 
-
-def parseBam(bamL, fields = ('chrm', 'pos', 'seq')):
-    bamL = bamL.strip().split()
-    allF = {
-        'qname': bamL[0].encode('utf-8'),
-        'flag':  int(bamL[1]),
-        'chrm':  bamL[2].encode('utf-8'),
-        'pos':   int(bamL[3]),
-        'mapq':  int(bamL[4]),
-        'cigar': bamL[5].encode('utf-8'),
-        'seq':   bamL[9].encode('utf-8'),
-        'qual':  bamL[10].encode('utf-8')}
-
-    # return tuple([allF[f] for f in fields])
-    return allF
-
-# Parse snp catalogue
 
 def flagReads(snpLocDic, bamLine, look_l, look_r, bamRecord):
 
@@ -160,41 +127,6 @@ def parseSNPs(fName):
 
     snpF.close()
     return snps
-
-def snpMask(snps, samF):
-
-    faultyReads = {}
-    for snp in snps:
-        crm = snp[0]
-        loc = int(snp[1]) - 1
-        ref = snp[2]
-        alt = snp[3]
-
-        for p_column in samF.pileup(crm, loc, loc+1):
-            if p_column.nsegments > 0:
-                for p_read in p_column.pileups:
-                    if not p_read.is_refskip and not p_read.is_del:
-                        p_alignment = p_read.alignment
-                        readLen = len(p_alignment.query_sequence)
-                        lookup = list(range(10)) + list(range(readLen-11, readLen))
-                        pos = p_read.query_position
-                        var = p_alignment.query_sequence[p_read.query_position] == alt
-                        if var and (pos in lookup):
-                            aln = p_alignment
-                            masked = aln.query_sequence.replace(str(pos),'N')
-                            aln.query_sequence = masked
-                            faultyReads[p_alignment.query_name] = aln
-
-    return faultyReads
-
-def filterBAM(inAln, outAln, faultyReads):
-
-    for read in inAln.fetch():
-        try:
-            outAln.write(faultyReads[read.query_name])
-        except KeyError:
-            outAln.write(read)
-
 
 def processBAM(inBAM, ouBAM, snps, contig, lookup, addTags = False):
 
