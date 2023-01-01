@@ -34,7 +34,9 @@ def test_flagReads_short():
         print(snps)
 
         assert mask == "mask" 
-        assert m_pos == [0,4,-2,-5]
-        assert m_side == [0,0,1,1]
+        assert m_pos == [0,1,5,-2,-5]
+        assert m_side == [0,0,0,1,1]
     inBAM.close()
 
+
+    
