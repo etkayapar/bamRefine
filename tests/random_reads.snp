@@ -1,0 +1,10 @@
+complex_5prime1_mask	1	0.4		177642744 C	T
+complex_5prime5_mask	1	0.4		177642748 C	T
+complex_5prime0_nomask	1	0.4		177642743 A	G
+complex_5prime_refskip	1	0.4		177642754 A	C
+complex_5prime_firstafterD	1	0.4		177642755 A	C
+complex_5prime_minus9	1	0.4		177642818 G	C
+short_5prime0_mask	1	0.4		237464528	C	T
+short_5prime1_mask	1	0.4		237464529	C	T
+short_3prime_minus2_mask	1	0.4		237464536	A	G
+short_5prime5_3prime_minus5	1	0.4		237464533	C	G
