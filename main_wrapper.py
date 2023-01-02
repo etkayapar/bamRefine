@@ -120,6 +120,16 @@ ouName  = os.path.abspath(ouName)
 snpF    = os.path.abspath(snpF)
 ouDir   = os.path.dirname(ouName)
 
+lookup = lookup.split(",")
+try:
+    lookup_l = int(lookup[0])
+    lookup_r = int(lookup[1])
+except ValueError:
+    msg = "value for the --pmd-length-threshold / -l option should be a single integer or two integers separated by a comma (e.g. -l 10,8)"
+    print(msg, file=sys.stderr)
+    usage()
+except IndexError:
+    pass
 
 ## ----------------------------------------------------------------
 def waitJobs(runningJobs):
@@ -170,7 +180,11 @@ def parallelParse(jobL, n, lookup):
 
     waitJobs(activeJobs)
 
-
+if os.path.isfile(ouName):
+    msg = f"Output file {ouName} already exists. Either choose a different output name for this run or remove/rename the old file."
+    print(msg, file=sys.stderr)
+    exit()
+    
 if os.path.isfile(inName+".bai"):
     print("Fetching Chromosomes")
     chrms = bamRefine_cy.fetchChromosomes(inName)
@@ -189,7 +203,7 @@ else:
     msg = '''
 Can't find input BAM in the specified path.
     '''
-    print(msg)
+    print(msg, file=sys.stderr)
     exit()
 
 ## Create a tmp directory
