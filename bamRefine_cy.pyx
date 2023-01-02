@@ -48,7 +48,7 @@ def flagReads(snpLocDic, bamLine, look_l, look_r, bamRecord):
     cdef list sideList= [] # store mask sides of positions (5' or 3')
 
     ## make look_l = look_r if the latter not set:
-    look_r = {True: look_l, False: look_r}[not look_r] 
+    look_r = {True: look_l, False: look_r}[look_r is None] 
     look_list = [look_l, look_r]
 
     refpos = bamRecord.get_reference_positions(full_length=True)
