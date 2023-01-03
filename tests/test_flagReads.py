@@ -28,7 +28,7 @@ def test_flagReads_complex_asymmetric():
     inBAM = pysam.AlignmentFile(inName, 'rb')
     for read in inBAM.fetch():
         bamL = read.to_dict()
-        mask, m_pos, m_side = flagReads(snps, bamL, 10, 0, read)
+        mask, m_pos, m_side = flagReads(snps, bamL, 10, 8, read)
 
         assert mask == "mask" 
         assert m_pos == [1,5,8]
