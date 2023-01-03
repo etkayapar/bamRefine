@@ -130,7 +130,7 @@ except ValueError:
     usage()
 except IndexError:
     pass
-
+lookup = ",".join(lookup)
 ## ----------------------------------------------------------------
 def waitJobs(runningJobs):
     while len([i for i in runningJobs if i.poll() != None]) < len(runningJobs):
