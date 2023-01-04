@@ -187,7 +187,7 @@ if os.path.isfile(ouName):
     
 if os.path.isfile(inName+".bai"):
     print("Fetching Chromosomes")
-    chrms = bamRefine_cy.fetchChromosomes(inName)
+    chrms = bamRefine.fetchChromosomes(inName)
     print("Done.")
 elif os.path.isfile(inName):
     msg = '''
@@ -196,7 +196,7 @@ elif os.path.isfile(inName):
     print(msg)
     pysam.index("-@ " + str(thread), inName)
     print("Done.")
-    chrms = bamRefine_cy.fetchChromosomes(inName)
+    chrms = bamRefine.fetchChromosomes(inName)
     print("Fetching Chromosomes")
     print("Done.")
 else:
@@ -220,7 +220,7 @@ except FileExistsError:
 print('\nStarted bam filtering\n')
 os.chdir(tmpname)
 
-jobs, bypass = bamRefine_cy.createBypassBED(inName, chrms, snpF)
+jobs, bypass = bamRefine.createBypassBED(inName, chrms, snpF)
 jobs_c = jobs.copy()
 
 parallelParse(jobs, thread, lookup)
