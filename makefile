@@ -1,10 +1,8 @@
 .PHONY: build
 
-all: install build path
+all: install path
 install:
 	pip3 install --user -r requirements.txt
-build:
-	python3 setup.py build_ext --inplace
 path:
 	@echo Installation completed.
 	@echo
