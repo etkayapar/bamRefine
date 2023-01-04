@@ -1,5 +1,5 @@
 import sys
-from bamRefine_cy import *
+from bamRefine import *
 import os
 # import pysam
 

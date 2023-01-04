@@ -39,13 +39,10 @@ def flagReads(snpLocDic, bamLine, look_l, look_r, bamRecord):
     SAM/BAM read contains a SNP.
     '''
 
-    cdef str chrm = bamLine['ref_name']
-    cdef str seq = bamLine['seq']
-    cdef list snp
-    cdef list inspectRange
-
-    cdef list snpList = [] # store positions to be masked
-    cdef list sideList= [] # store mask sides of positions (5' or 3')
+    chrm = bamLine['ref_name']
+    seq = bamLine['seq']
+    snpList = [] # store positions to be masked
+    sideList= [] # store mask sides of positions (5' or 3')
 
     ## make look_l = look_r if the latter not set:
     look_r = {True: look_l, False: look_r}[look_r is None] 
@@ -130,12 +127,6 @@ def parseSNPs(fName):
 
 def processBAM(inBAM, ouBAM, snps, contig, lookup, addTags = False):
 
-    # cdef dict bamL
-    cdef list m_pos
-    cdef list t
-    cdef str t1
-    cdef list q
-    cdef str q1
     lookup = lookup.split(",")
     lookup_l = int(lookup[0])
     try:
