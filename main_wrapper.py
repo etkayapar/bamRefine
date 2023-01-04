@@ -6,7 +6,7 @@ import pysam
 import time
 from subprocess import Popen
 import getopt
-import bamRefine_cy
+import bamRefine
 import pickle
 import shutil
 import glob
