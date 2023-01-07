@@ -17,7 +17,7 @@ of data loss that is encountered when using mainstream pipelines.
 
 Consider the following example.
 
-![](./figs/healthyAlignment_scaled.jpg)
+![](https://github.com/etkayapar/bamRefine/blob/master/figs/healthyAlignment_scaled.jpg?raw=true)
 
 above, in the left, you see the table of 
 a theoretical SNP catalog with the 
@@ -32,12 +32,12 @@ addition to the expected biological variation among the aligned
 reads, there is also unexpedted variants resulting from DNA damage
 at the ends of fragmented ancient DNA. 
 
-![](./figs/damagedAlignment_scaled.jpg)
+![](https://github.com/etkayapar/bamRefine/blob/master/figs/damagedAlignment_scaled.jpg?raw=true)
 
 At the 5' ends, these damages will occur as C-\>T changes, and at the 
 3' ends they will appear as G-\>A changes. 
 
-![](./figs/PMD_smiley.jpg)
+![](https://github.com/etkayapar/bamRefine/blob/master/figs/PMD_smiley.jpg?raw=true)
 
 
 Therefore, a C/\* variant in the table becomes a possible PMD source
@@ -47,7 +47,7 @@ the case for a G/\* variant if a read overlaps with it at the 3' end.
 Bamrefine, first characterizes the input SNP collection into two tables
 as 5' end suspects and 3' end suspects:
 
-![](./figs/snpTables.jpg) 
+![](https://github.com/etkayapar/bamRefine/blob/master/figs/snpTables.jpg?raw=true) 
 
 and then iterates over the reads in the BAM file searching for overlaps
 with the two suspect tables at the appropriate ends of the reads (overlaps
@@ -56,7 +56,7 @@ and the 3' table variants). Then if a read carries a suspected/dangerous variant
 at the ends, the program masks those specific position in the read so that
 they won't interfere with the SNP calling for the downstream steps:
 
-![](./figs/maskingExample.jpg)
+![](https://github.com/etkayapar/bamRefine/blob/master/figs/maskingExample.jpg?raw=true)
 
 
 As you can see at the right hand side example of the above picture, 
