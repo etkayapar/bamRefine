@@ -49,7 +49,7 @@ def waitJobs(runningJobs):
 
 
 def man(args=None):
-    data_path = os.path.join(os.path.dirname(__file__), 'bamrefine.1')
+    data_path = os.path.join(os.path.dirname(__file__), 'man', 'man1','bamrefine.1')
     os.system(f"man {data_path}")
     
 
