@@ -1,4 +1,4 @@
-from bamRefine import *
+from bamRefine.functions import *
 #import os
 
 dirN = os.path.dirname(os.path.realpath(__file__))
