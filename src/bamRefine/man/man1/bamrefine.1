@@ -18,7 +18,15 @@ major alleles. This can be either 4/5 column BED (genomic position
 [with or without the `start` position column] + Minor and Major allele)
 or SNP (that is used by EIGENSTRAT) formatted files. Format distinction is done by
 checking the file extension so it is important that the input file follows
-the format of the extension it has.
+the format of the extension it has. See the sample_data data directory in the installation
+path for examples of each of the tree supported file types. You can find the installation
+directory by running:
+
+\fBpip3 show bamrefine\fP
+
+or
+
+\fBpip show bamrefine\fP
 .TP
 \fB-p, --threads\fP
 Number of threads to run the program in parallel.
