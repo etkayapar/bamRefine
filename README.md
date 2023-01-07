@@ -8,7 +8,6 @@
     - [Usage](#usage)
         - [Parameters:](#parameters)
         - [Flags:](#flags)
-    - [Dependencies](#dependencies)
 
 <!-- markdown-toc end -->
 
@@ -122,6 +121,11 @@ This therefore means:
   separated by a comma (e.g `-l 2,0`) representing different length values corresponding
   5' and 3' ends , respectively. Positions that are up to and including this far in any read will 
   be evaluated and masked.
+  Also, it is recommended that you have PMD related statistics (e.g. up to which position there is a high 
+  risk of seeing a PMD artifact) regarding your libraries before you run this program on the BAM files 
+  because the `--pmd-length-threshold` parameter requires an user specified value for the program to run, 
+  there is no default value. This can be achieved by using [PMDtools](https://github.com/pontussk/PMDtools)
+
 
 ### Flags:
 
@@ -137,17 +141,3 @@ This therefore means:
     directory with specified ouptut BAM, named as `.YYYY-MM-DD_HH-MM-SS_<out.bam>_tmp_bamrefine`
 
   
-## Dependencies
-
-Python libraries:
-
-  * `pysam`
-
-Also, it is recommended that you
-have PMD related statistics (e.g. up to which position there is a high 
-risk of seeing a PMD artifact) regarding your libraries before you run this
-program on the BAM files because the `--pmd-length-threshold` parameter
-requires an user specified value for the program to run, there is no default
-value. This can be achieved
-by using [PMDtools](https://github.com/pontussk/PMDtools)
-
