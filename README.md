@@ -1,16 +1,5 @@
 # bamrefine
 
-<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
-**Table of Contents**
-
-- [bamrefine](#bamrefine)
-    - [Masking strategy](#masking-strategy)
-    - [Usage](#usage)
-        - [Parameters:](#parameters)
-        - [Flags:](#flags)
-
-<!-- markdown-toc end -->
-
 This is a BAM filtering/masking program that  masks the positions from an
 alignment if that read carries a variant position that could be affected
 by post-mortem damage (PMD). e.g. If a read carries a C/\* position at its
