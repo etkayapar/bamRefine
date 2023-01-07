@@ -219,3 +219,23 @@ def fetchChromosomes(inName):
     idstats = [x.split("\t") for x in idstats][:-2] ## last two contigs are meaningless
     chrms = [x[0] for x in idstats if x[2] != '0']
     return chrms
+
+def main(args=None):
+
+    inName = sys.argv[1]
+    contig = sys.argv[2]
+    lookup = sys.argv[3]
+    snps = sys.argv[4]
+    addTags = bool(int(sys.argv[5]))
+
+
+    snps = handleSNPs(snps)
+
+    ouName = contig + ".bam"
+
+    inBAM = pysam.AlignmentFile(inName, 'rb')
+    ouBAM = pysam.AlignmentFile(ouName, 'wb', template=inBAM)
+
+    processBAM(inBAM, ouBAM, snps, contig, lookup, addTags)
+
+    return 0

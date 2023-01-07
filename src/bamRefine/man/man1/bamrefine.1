@@ -1,4 +1,4 @@
-.TH bamrefine 1 "7 May 2020"
+.TH bamrefine 1 "January  7, 2023"
 .SH NAME
 bamrefine \- Mask SNPs from a BAM file
 .SH SYNOPSIS
@@ -16,16 +16,27 @@ argument (see \fB-l\fP)
 Path to BED or SNP formatted file for SNP positions and minor and
 major alleles. This can be either 4/5 column BED (genomic position
 [with or without the `start` position column] + Minor and Major allele)
-or SNP (that of PLINK) formatted files. Format distinction is done by
+or SNP (that is used by EIGENSTRAT) formatted files. Format distinction is done by
 checking the file extension so it is important that the input file follows
-the format of the extension it has.
+the format of the extension it has. See the sample_data data directory in the installation
+path for examples of each of the tree supported file types. You can find the installation
+directory by running:
+
+\fBpip3 show bamrefine\fP
+
+or
+
+\fBpip show bamrefine\fP
 .TP
 \fB-p, --threads\fP
 Number of threads to run the program in parallel.
 .TP
 .TP
 \fB-l, --pmd-length-threshold\fP
-PMD length threshold. Positions that are up to and including this far in any read
+PMD length threshold. Either a single integer (e.g \fB -l 10\fP) or two integers separated
+by a comma representing different length values corresponding 5' and 3' ends
+(e.g \fB -l 2,0\fP), respectively.
+Positions that are up to and including this far in any read
 will be evaluated and masked. There is no one-for-all default value that can be set,
 so it is highly recommended that you have a prior information about the PMD profiles
 of your libraries before you run \fBbamrefine\fP
@@ -35,9 +46,11 @@ of your libraries before you run \fBbamrefine\fP
 Verbose output of progress
 .TP
 \fB-t, --add-tags\fP
-Add tags to output BAM file related to masking statistics using
-optional fields in alignment records. e.g. ZC:Z:2,1 ZP:Z:0,5;68
-would mean that program masked 2 5' and 1 3' positions and they were at index 0,5 and 68 in the sequence.
+Add tags to output BAM file related to masking statistics using optional fields in alignment
+records. e.g. ZC:Z:2,1 ZP:Z:0,5;-3 would mean that the program masked 2 5' and 1 3' positions
+and they were at index 0,5 and -3 in the sequence. 3' masking positions are represented with
+negative indices that start counting from the 3' end of the read and is compatible with
+python list indices.
 .TP
 \fB-k, --keep-tmp\fP
 Don't remove the temporary run directory. It will include intermediate BAM files,
