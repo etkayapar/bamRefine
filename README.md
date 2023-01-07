@@ -1,5 +1,17 @@
 # bamrefine
 
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
+**Table of Contents**
+
+- [bamrefine](#bamrefine)
+    - [Masking strategy](#masking-strategy)
+    - [Usage](#usage)
+        - [Parameters:](#parameters)
+        - [Flags:](#flags)
+    - [Dependencies](#dependencies)
+
+<!-- markdown-toc end -->
+
 This is a BAM filtering/masking program that  masks the positions from an
 alignment if that read carries a variant position that could be affected
 by post-mortem damage (PMD). e.g. If a read carries a C/\* position at its
@@ -12,6 +24,9 @@ of BAM reads with the suspicion of those regions containing
 non-authentic (post mortem damage artifact) SNPs, or 
 ignoring transition SNPs alltogether. Thus, avoiding a substantial amount
 of data loss that is encountered when using mainstream pipelines.
+
+You can install `bamrefine` from PyPI using `pip`. Upon installation of the package,
+the command `bamrefine` should be available to you.
 
 ## Masking strategy
 
@@ -94,22 +109,29 @@ This therefore means:
 
 ### Parameters:
 
-  * `-s, --snps`: SNP collection file. This can be either
-    4/5 column BED (genomic position [with or without the `start` position column] + 
-    Minor and Major allele) or SNP (that of PLINK) formatted files. Format 
-    distinction is done by checking the file extension so it is important that
-    the input file follows the format of the extension it has.
+  * `-s, --snps`: SNP collection file. This can be either 4/5 column BED 
+  (genomic position [with or without the `start` position column] + 
+  Minor and Major allele) or SNP (that is used by EIGENSTRAT) formatted files. 
+  Format distinction is done by checking the file extension so it is important 
+  that the input file follows the format of the extension it has. See the 
+  `sample_data` data directory in the installation path for examples of each of 
+  the three supported file types. You can find the installation directory by running
+  `pip3 show bamrefine` or `pip show bamrefine`.
   * `-p, --threads`: Threads to run the program in parallel.
-  * `-l, --pmd-length-threshold`: N nucleotide region from
-    both ends of a read to be treated as a possible PMD region.
+  * `-l, --pmd-length-threshold`: Either a single integer (e.g `-l 10`) or two integers 
+  separated by a comma (e.g `-l 2,0`) representing different length values corresponding
+  5' and 3' ends , respectively. Positions that are up to and including this far in any read will 
+  be evaluated and masked.
 
 ### Flags:
 
   * `-v, --verbose`: verbose output of progress.
   * `-t, --add-tags`: Add tags to reads in output BAM file related to masking statistics 
-    using optional SAM fields in alignment records. e.g. `ZC:Z:2,1`  and `ZP:Z:0,5;68` 
+    using optional SAM fields in alignment records. e.g. `ZC:Z:2,1`  and `ZP:Z:0,5;-3` 
     would mean that the program masked n=2 5' and n=1 3' positions and they were at index 
-    0,5 and 68 in the read sequence.
+    0,5 and -3 in the read sequence. 3' masking positions are represented with negative 
+	indices that start counting from the 3' end of the read and is compatible with python 
+	list indices.
   * `-k, --keep-tmp`: Don't remove the temprorary run directory. It will include 
     intermediate BAM files, cached SNPs, etc. this directory is under the same
     directory with specified ouptut BAM, named as `.YYYY-MM-DD_HH-MM-SS_<out.bam>_tmp_bamrefine`
@@ -119,13 +141,13 @@ This therefore means:
 
 Python libraries:
 
-  * `cython`
   * `pysam`
 
 Also, it is recommended that you
 have PMD related statistics (e.g. up to which position there is a high 
 risk of seeing a PMD artifact) regarding your libraries before you run this
 program on the BAM files because the `--pmd-length-threshold` parameter
-requires an user specified value for the program to run, there is no defaul 
+requires an user specified value for the program to run, there is no default
 value. This can be achieved
 by using [PMDtools](https://github.com/pontussk/PMDtools)
+
