@@ -19,21 +19,20 @@ def usage(help=False):
 Usage: ./bamrefine [options] <in.bam> <out.bam>
 
 OPTIONS:
-        -s, --snps                    BED  or SNP formatted file for snps
-        -p, --threads                 # of threads to use
-        -l, --pmd-length-threshold    pmd length threshold
+        -s, --snps                    <FILE> BED  or SNP formatted file for snps
+        -p, --threads                 <INT> # of threads to use
+        -l, --pmd-length-threshold    <INT|INT,INT> pmd length threshold
 FLAGS:
         -t, --add-tags                add maskings stats as optional SAM fields to the alignments
         -v, --verbose                 verbose output of progress
-        -k, --keep-tmp                don't remove the temporary directory (./.tmp_bamrefine)
+        -k, --keep-tmp                don't remove the temporary directory (.YYYY-MM-DD_HH-MM-SS_<out.bam>_tmp_bamrefine)
         -h, --help                    display this message end exit
 
 
     '''
 
     helpmsg = '''
-Consider reading the man page. You can do so by navigating to the
-program's directory and run 'man ./bamrefine.1'
+Consider reading the man page. You can do so by running the command: bamrefine_man
 '''
 
     if help:
