@@ -16,7 +16,7 @@ from datetime import datetime
 def usage(help=False):
     msg = '''
 
-Usage: ./bamrefine [options] <in.bam> <out.bam>
+Usage: bamrefine [options] <in.bam> <out.bam>
 
 OPTIONS:
         -s, --snps                    <FILE> BED  or SNP formatted file for snps
@@ -187,7 +187,7 @@ def main(args=None):
     lookup = ",".join(lookup)
     ## ----------------------------------------------------------------
     if os.path.isfile(ouName):
-        msg = f"Output file {ouName} already exists. Either choose a different output name for this run or remove/rename the old file."
+        msg = f"Output file {ouName} already exists. Either choose a different output name for this run or remove/rename the old output bam and the stats files."
         print(msg, file=sys.stderr)
         exit()
 
