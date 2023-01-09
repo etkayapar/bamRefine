@@ -1,5 +1,6 @@
-[![PyPI version](https://badge.fury.io/py/bamrefine.svg)](https://badge.fury.io/py/bamrefine)
 # bamrefine
+
+[![PyPI version](https://badge.fury.io/py/bamrefine.svg)](https://badge.fury.io/py/bamrefine)
 
 This is a BAM filtering/masking program that  masks the positions from an
 alignment if that read carries a variant position that could be affected
