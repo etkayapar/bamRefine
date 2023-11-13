@@ -28,7 +28,7 @@ you can also install `bamrefine` from a local download:
 to do so, first download the latest release from the [github releases page](https://github.com/etkayapar/bamRefine/tags), and uncompress the downloaded archive. Once you have the source code downloaded, you can navigate into the folder and use pip to install from the copy you have downloaded:
 
 ```
-cd bamRefine-0.1.0
+cd bamRefine-0.1.X
 pip install .
 ```
 
