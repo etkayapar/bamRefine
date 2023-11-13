@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bamrefine"
-version = "0.1.0"
+version = "0.1.1"
 authors = [
 	{name="Etka Yapar", email="etka.yapar@gmail.com"},
 ]
@@ -12,7 +12,7 @@ description = "A small program to mask positions that could result in a PMD arti
 readme = "README.md"
 requires-python = ">=3.6"
 dependencies = [
-	"pysam ~= 0.20.0",
+	"pysam >= 0.20.0",
 ]
 classifiers = [
 	"Programming Language :: Python :: 3",
