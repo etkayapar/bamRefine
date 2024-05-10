@@ -3,6 +3,7 @@ import os
 import pickle
 import sys
 import subprocess as sp
+from importlib.metadata import version
 
 def isDangerous(var):
     if ("C" in var) and ("G" in var):
@@ -30,6 +31,29 @@ def generateTags(snpList, sideList):
 
     return [tag1, tag2]
 
+def modifyHeader(input_header, bamrefine_version, bamrefine_command_line):
+    output_header_dict = input_header.to_dict()
+    prev_bamrefine = [x['ID'] for x in output_header_dict['PG'] if 'bamrefine' in x['ID']]
+    this_bamrefine = ""
+    if len(prev_bamrefine) > 0:
+        if '.' in prev_bamrefine[-1]:
+            last_bamrefine = prev_bamrefine[-1]
+            this_bamrefine = last_bamrefine.split(".")[-1]
+            this_bamrefine = str(int(this_bamrefine) + 1)
+            this_bamrefine += "."
+        else:
+            this_bamrefine = ".1"
+    ID = "bamrefine" + this_bamrefine
+
+    output_header_dict['PG'].append({'ID': ID,
+                                     'PN': 'bamrefine',
+                                     'VN': bamrefine_version,
+                                     'PP': output_header_dict['PG'][-1]['ID'],
+                                     'CL': bamrefine_command_line})
+
+    output_header = pysam.AlignmentHeader.from_dict(output_header_dict)
+
+    return output_header
 
 def flagReads(snpLocDic, bamLine, look_l, look_r, bamRecord):
 
@@ -233,8 +257,13 @@ def main(args=None):
 
     ouName = contig + ".bam"
 
+    bamrefine_commandline = os.environ['BAMREFINE_CMDLINE']
+    bamrefine_version = version("bamrefine")
+
     inBAM = pysam.AlignmentFile(inName, 'rb')
-    ouBAM = pysam.AlignmentFile(ouName, 'wb', template=inBAM)
+    output_header = modifyHeader(inBAM.header, bamrefine_version, bamrefine_commandline)
+
+    ouBAM = pysam.AlignmentFile(ouName, 'wb', header=output_header)
 
     processBAM(inBAM, ouBAM, snps, contig, lookup, addTags)
 
