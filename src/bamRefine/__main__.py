@@ -53,7 +53,7 @@ def man(args=None):
     
 
 def main(args=None):
-    def parallelParse(jobL, n, lookup):
+    def parallelParse(jobL, n, lookup, env):
         activeJobs = []
         jobN = []
 
@@ -66,7 +66,7 @@ def main(args=None):
 
             cmdList = ["bamrefine_proc", inName,c, lookup, snpF, str(int(addTags))]
             cmd = " ".join(cmdList)
-            p = Popen([cmd], shell = True)
+            p = Popen([cmd], shell = True, env=env)
             activeJobs.append(p)
             jobN.append(c)
             if verbose:
@@ -88,7 +88,7 @@ def main(args=None):
                     c = jobL.pop()
                     cmdList = ["bamrefine_proc", inName,c, lookup, snpF,str(int(addTags))]
                     cmd = " ".join(cmdList)
-                    p = Popen([cmd], shell = True)
+                    p = Popen([cmd], shell = True, env=env)
                     if verbose:
                         print("Started job for chr%s" % c)
                     activeJobs[i] = p
@@ -229,7 +229,10 @@ def main(args=None):
     jobs, bypass = bamRefine.createBypassBED(inName, chrms, snpF)
     jobs_c = jobs.copy()
 
-    parallelParse(jobs, thread, lookup)
+    env = os.environ.copy()
+    env["BAMREFINE_CMDLINE"] = " ".join(sys.argv)
+
+    parallelParse(jobs, thread, lookup, env)
 
     print("Finished BAM filtering\n\nMerging BAM files...")
 
@@ -249,12 +252,6 @@ def main(args=None):
         pysam.view("-@", str(thread), "--no-PG", "-L", "bypass.bed", "-b", "-o" "bypassed.bam", inName, catch_stdout=False) ##pysam bug
 
     pysam.merge("--no-PG", "-c", "-p", "-b" , toMergeF, "-O", "BAM", "-@", str(thread), ouName)
-
-    # pysam.view("-H", "-o", "header.sam", inName, catch_stdout=False)
-    # pysam.reheader("-P",  "-i", "header.sam", ouName)
-
-    # while reheading.poll() == None:
-    #     continue
 
     print("Finished merging.")
 
