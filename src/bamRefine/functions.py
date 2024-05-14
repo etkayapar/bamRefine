@@ -15,6 +15,12 @@ def isDangerous(var):
     else:
         return (False, None)
 
+def isDangerous_single(var):
+    if ("C" in var):
+        return (True, 'both')
+    else:
+        return (False, None)
+
 def generateTags(snpList, sideList):
     tag1 = ",".join([str(sideList.count(x)) for x in [0,1]])
     tag1 = ('ZC',tag1)
@@ -58,9 +64,10 @@ def modifyHeader(input_header, bamrefine_version, bamrefine_command_line):
 def flagReads(snpLocDic, bamLine, look_l, look_r, bamRecord):
 
     '''
-    Find if there is a snp in the loaded SNP catalogue
-    for the given range. It is usally for checking if a
-    SAM/BAM read contains a SNP.
+    Flag positions to be masked. Mapped read positions in <bamRecord> that
+    overlap with selected variants in the <snpLocDic> within <look_l> bases
+    from the 5' end and <look_r> bases from the 3' end will be flagged for
+    masking.
     '''
 
     chrm = bamLine['ref_name']
@@ -69,7 +76,7 @@ def flagReads(snpLocDic, bamLine, look_l, look_r, bamRecord):
     sideList= [] # store mask sides of positions (5' or 3')
 
     ## make look_l = look_r if the latter not set:
-    look_r = {True: look_l, False: look_r}[look_r is None] 
+    look_r = {True: look_l, False: look_r}[look_r is None]
     look_list = [look_l, look_r]
 
     refpos = bamRecord.get_reference_positions(full_length=True)
@@ -90,24 +97,80 @@ def flagReads(snpLocDic, bamLine, look_l, look_r, bamRecord):
 
     for side in range(2):
         for i, nt in enumerate(inspectRange[side]):
-            shift = [0,1][side] 
+            shift = [0,1][side]
             sign = [1,-1][side]
             i = i + shift
             i = i * sign ### get indices for the 3' end
             key = chrm + " " + str(nt)
             try:
                 snp = snpLocDic[side][key]
-                snpList.append(i)
-                sideList.append(side)
-
             except KeyError:
                 continue
+            else:
+                snpList.append(i)
+                sideList.append(side)
 
     if len(snpList) > 0:
         return ('mask', snpList, sideList)
     else:
         return ('nomask', snpList, sideList)
 
+def flagReads_single(snpLocDic, bamLine, look_l, look_r, bamRecord):
+
+    '''
+    Same behavior as flagReads() but customized behavior for
+    single-stranded libraries. For both the 5' and 3' ends
+    only the "C/*" variants will be considered.
+    ------
+    Flag positions to be masked. Mapped read positions in <bamRecord> that
+    overlap with selected variants in the <snpLocDic> within <look_l> bases
+    from the 5' end and <look_r> bases from the 3' end will be flagged for
+    masking.
+    '''
+    chrm = bamLine['ref_name']
+    seq = bamLine['seq']
+    snpList = [] # store positions to be masked
+    sideList= [] # store mask sides of positions (5' or 3')
+
+    ## make look_l = look_r if the latter not set:
+    look_r = {True: look_l, False: look_r}[look_r is None]
+    look_list = [look_l, look_r]
+
+    refpos = bamRecord.get_reference_positions(full_length=True)
+    refpos = [x + 1 if x is not None else x for x in refpos] ## pysam uses 0-based indices
+    read_len = len(seq)
+    ## Lookup range should be about the physical first N bases in the read, not the first
+    ## N reference bases. I will assume this until I finish implementing this feature.
+    ## this might change later.
+
+    ## Default inspectRange:
+    inspectRange = [refpos[:look_l], refpos[read_len-1:read_len-look_r-1:-1]]
+
+    ## Adjust if read is too short for the lookup values from either side:
+    for side in range(2):
+        sign = [1,-1][side]
+        if read_len <= look_list[side]:
+            inspectRange[side] = refpos[::sign] ## reverse the pos list if 3' end
+
+    for side in range(2):
+        for i, nt in enumerate(inspectRange[side]):
+            shift = [0,1][side]
+            sign = [1,-1][side]
+            i = i + shift
+            i = i * sign ### get indices for the 3' end
+            key = chrm + " " + str(nt)
+            try:
+                snp = snpLocDic[0][key] ## Dont use the other side in single-stranded mode
+            except KeyError:
+                continue
+            else:
+                snpList.append(i)
+                sideList.append(side)
+
+    if len(snpList) > 0:
+        return ('mask', snpList, sideList)
+    else:
+        return ('nomask', snpList, sideList)
 def parseSNPs(fName):
     snpF = open(fName)
     # curC = 'chr1'
@@ -129,7 +192,7 @@ def parseSNPs(fName):
         chrI, posI, refI, altI = tuple(range(4))
 
         if ncol == 5:
-           posI, refI, altI = tuple([x+1 for x in (posI, refI, altI)]) 
+           posI, refI, altI = tuple([x+1 for x in (posI, refI, altI)])
 
 
     for snp in snpF:
@@ -149,7 +212,7 @@ def parseSNPs(fName):
     snpF.close()
     return snps
 
-def processBAM(inBAM, ouBAM, snps, contig, lookup, addTags = False):
+def processBAM(inBAM, ouBAM, snps, contig, lookup, addTags = False, flag_reads_func=flagReads):
 
     lookup = lookup.split(",")
     lookup_l = int(lookup[0])
@@ -163,16 +226,18 @@ def processBAM(inBAM, ouBAM, snps, contig, lookup, addTags = False):
 
     for read in inBAM.fetch(contig):
         bamL = read.to_dict()
-        #print(bamL)
-        mask, m_pos, m_side = flagReads(snps, bamL, lookup_l, lookup_r, read)
+        mask, m_pos, m_side = flag_reads_func(snps, bamL, lookup_l, lookup_r, read)
         if mask == 'mask':
+            t = list(bamL['seq'])
+            q = list(bamL['qual'])
             for p in m_pos:
                 # print('in read %s, position %d' % (bamL['name'], p))
-                t = list(bamL['seq']) ; t[p] = 'N' ; t1 = "".join(t) ; del(t)
-                bamL['seq'] = t1
-                q = list(bamL['qual']) ; q[p] = '!' ; q1 = "".join(q) ; del(q)
-                bamL['qual'] = q1
-                # bamLine --> pysam.AlignedSegment
+                t[p] = 'N'
+                q[p] = '!'
+            t1 = "".join(t)
+            q1 = "".join(q)
+            bamL['seq'] = t1
+            bamL['qual'] = q1
             bamL = pysam.AlignedSegment.from_dict(bamL, inBAM.header)
             st = [m_side.count(x) for x in [0,1]]
             for x in range(2):
@@ -251,7 +316,12 @@ def main(args=None):
     lookup = sys.argv[3]
     snps = sys.argv[4]
     addTags = bool(int(sys.argv[5]))
+    singleStranded = bool(int(sys.argv[6]))
 
+
+    flag_reads_func = flagReads
+    if singleStranded:
+        flag_reads_func = flagReads_single
 
     snps = handleSNPs(snps)
 
@@ -265,6 +335,6 @@ def main(args=None):
 
     ouBAM = pysam.AlignmentFile(ouName, 'wb', header=output_header)
 
-    processBAM(inBAM, ouBAM, snps, contig, lookup, addTags)
+    processBAM(inBAM, ouBAM, snps, contig, lookup, addTags, flag_reads_func=flag_reads_func)
 
     return 0
