@@ -103,7 +103,7 @@ def flagReads(snpLocDic, bamLine, look_l, look_r, bamRecord):
             i = i * sign ### get indices for the 3' end
             key = chrm + " " + str(nt)
             try:
-                snp = snpLocDic[side][key]
+                snp = snpLocDic[side * -1][key] ## Always use the 5' side if ss-mode
             except KeyError:
                 continue
             else:
@@ -115,62 +115,6 @@ def flagReads(snpLocDic, bamLine, look_l, look_r, bamRecord):
     else:
         return ('nomask', snpList, sideList)
 
-def flagReads_single(snpLocDic, bamLine, look_l, look_r, bamRecord):
-
-    '''
-    Same behavior as flagReads() but customized behavior for
-    single-stranded libraries. For both the 5' and 3' ends
-    only the "C/*" variants will be considered.
-    ------
-    Flag positions to be masked. Mapped read positions in <bamRecord> that
-    overlap with selected variants in the <snpLocDic> within <look_l> bases
-    from the 5' end and <look_r> bases from the 3' end will be flagged for
-    masking.
-    '''
-    chrm = bamLine['ref_name']
-    seq = bamLine['seq']
-    snpList = [] # store positions to be masked
-    sideList= [] # store mask sides of positions (5' or 3')
-
-    ## make look_l = look_r if the latter not set:
-    look_r = {True: look_l, False: look_r}[look_r is None]
-    look_list = [look_l, look_r]
-
-    refpos = bamRecord.get_reference_positions(full_length=True)
-    refpos = [x + 1 if x is not None else x for x in refpos] ## pysam uses 0-based indices
-    read_len = len(seq)
-    ## Lookup range should be about the physical first N bases in the read, not the first
-    ## N reference bases. I will assume this until I finish implementing this feature.
-    ## this might change later.
-
-    ## Default inspectRange:
-    inspectRange = [refpos[:look_l], refpos[read_len-1:read_len-look_r-1:-1]]
-
-    ## Adjust if read is too short for the lookup values from either side:
-    for side in range(2):
-        sign = [1,-1][side]
-        if read_len <= look_list[side]:
-            inspectRange[side] = refpos[::sign] ## reverse the pos list if 3' end
-
-    for side in range(2):
-        for i, nt in enumerate(inspectRange[side]):
-            shift = [0,1][side]
-            sign = [1,-1][side]
-            i = i + shift
-            i = i * sign ### get indices for the 3' end
-            key = chrm + " " + str(nt)
-            try:
-                snp = snpLocDic[0][key] ## Dont use the other side in single-stranded mode
-            except KeyError:
-                continue
-            else:
-                snpList.append(i)
-                sideList.append(side)
-
-    if len(snpList) > 0:
-        return ('mask', snpList, sideList)
-    else:
-        return ('nomask', snpList, sideList)
 def parseSNPs(fName):
     snpF = open(fName)
     # curC = 'chr1'
@@ -212,7 +156,7 @@ def parseSNPs(fName):
     snpF.close()
     return snps
 
-def processBAM(inBAM, ouBAM, snps, contig, lookup, addTags = False, flag_reads_func=flagReads):
+def processBAM(inBAM, ouBAM, snps, contig, lookup, addTags = False):
 
     lookup = lookup.split(",")
     lookup_l = int(lookup[0])
@@ -226,7 +170,7 @@ def processBAM(inBAM, ouBAM, snps, contig, lookup, addTags = False, flag_reads_f
 
     for read in inBAM.fetch(contig):
         bamL = read.to_dict()
-        mask, m_pos, m_side = flag_reads_func(snps, bamL, lookup_l, lookup_r, read)
+        mask, m_pos, m_side = flagReads(snps, bamL, lookup_l, lookup_r, read)
         if mask == 'mask':
             t = list(bamL['seq'])
             q = list(bamL['qual'])
@@ -319,10 +263,6 @@ def main(args=None):
     singleStranded = bool(int(sys.argv[6]))
 
 
-    flag_reads_func = flagReads
-    if singleStranded:
-        flag_reads_func = flagReads_single
-
     snps = handleSNPs(snps)
 
     ouName = contig + ".bam"
@@ -335,6 +275,6 @@ def main(args=None):
 
     ouBAM = pysam.AlignmentFile(ouName, 'wb', header=output_header)
 
-    processBAM(inBAM, ouBAM, snps, contig, lookup, addTags, flag_reads_func=flag_reads_func)
+    processBAM(inBAM, ouBAM, snps, contig, lookup, addTags)
 
     return 0
