@@ -231,7 +231,7 @@ def main(args=None):
     print('\nStarted bam filtering\n')
     os.chdir(tmpname)
 
-    jobs, bypass = bamRefine.createBypassBED(inName, chrms, snpF)
+    jobs, bypass = bamRefine.createBypassBED(inName, chrms, snpF, singleStranded)
     jobs_c = jobs.copy()
 
     env = os.environ.copy()

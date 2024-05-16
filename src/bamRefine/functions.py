@@ -17,7 +17,7 @@ def isDangerous(var):
 
 def isDangerous_single(var):
     if ("C" in var):
-        return (True, 'both')
+        return (True, '0')
     else:
         return (False, None)
 
@@ -115,11 +115,8 @@ def flagReads(snpLocDic, bamLine, look_l, look_r, bamRecord):
     else:
         return ('nomask', snpList, sideList)
 
-def parseSNPs(fName):
-    snpF = open(fName)
-    # curC = 'chr1'
-    # chrm = 'chr1'
-    snps = [{}, {}]
+
+def detectSNPfileFormat(fName):
     if fName.endswith('.snp'):
         chrI = 1
         posI = 3
@@ -138,11 +135,26 @@ def parseSNPs(fName):
         if ncol == 5:
            posI, refI, altI = tuple([x+1 for x in (posI, refI, altI)])
 
+    return (chrI, posI, refI, altI)
+
+
+def parseSNPs(fName, singleStranded):
+
+    categorize_snps_func = isDangerous
+    if singleStranded:
+        categorize_snps_func = isDangerous_single
+
+    snpF = open(fName)
+    # curC = 'chr1'
+    # chrm = 'chr1'
+    snps = [{}, {}]
+
+    chrI, posI, refI, altI = detectSNPfileFormat(fName)
 
     for snp in snpF:
         snp = snp.strip().split()
         curC = snp[chrI]
-        dangerous, side = isDangerous([snp[refI], snp[altI]])
+        dangerous, side = categorize_snps_func([snp[refI], snp[altI]])
         if not dangerous:
             # ignoring otherwise
             continue
@@ -152,6 +164,9 @@ def parseSNPs(fName):
         else:
             snps[0][key] = [snp[x] for x in [chrI, posI, refI, altI]]
             snps[1][key] = [snp[x] for x in [chrI, posI, refI, altI]]
+
+    if len(snps[1]) == 0:
+        del(snps[1])
 
     snpF.close()
     return snps
@@ -201,33 +216,66 @@ def processBAM(inBAM, ouBAM, snps, contig, lookup, addTags = False):
     ouBAM.close()
     statsF.close()
 
+def distributeSNPs(fName, chrms, singleStranded):
 
-def handleSNPs(fName):
-    pickleName = os.path.basename(fName) + ".brf"
+    categorize_snps_func = isDangerous
+    if singleStranded:
+        categorize_snps_func = isDangerous_single
+
+    # curC = 'chr1'
+    # chrm = 'chr1'
+    # snps = [{}, {}]
+    snps = {chrm: [{}, {}] for chrm in chrms}
+
+    chrI, posI, refI, altI = detectSNPfileFormat(fName)
+
+    with open(fName) as snpF:
+        for snp in snpF:
+            snp = snp.strip().split()
+            curC = snp[chrI]
+            dangerous, side = categorize_snps_func([snp[refI], snp[altI]])
+            if not dangerous:
+                # ignoring otherwise
+                continue
+            key = curC + " " + snp[posI]
+            if side != 'both':
+                snps[curC][int(side)][key] = [snp[x] for x in [chrI, posI, refI, altI]]
+            else:
+                snps[curC][0][key] = [snp[x] for x in [chrI, posI, refI, altI]]
+                snps[curC][1][key] = [snp[x] for x in [chrI, posI, refI, altI]]
+
+    ## IMPORTANT!!
+    snps = {chrm: [snps[chrm][i] for i in range(len(snps[chrm])) if len(snps[chrm][i]) > 0] for chrm in snps if len(snps[chrm][0]) > 0}
+
+    ss = ["ds", "ss"][int(singleStranded)]
+    present_chrms = set()
+    for chrm in snps:
+        present_chrms.add(chrm)
+        pickleName = os.path.basename(fName) + "_singleStranded_" + ss + "_contig_" + chrm +".brf"
+        with open(pickleName, 'wb') as pfile:
+            pickle.dump(snps[chrm], pfile)
+
+    return present_chrms
+
+def handleSNPs(fName, singleStranded, contig):
+    ss = ["ds", "ss"][int(singleStranded)]
+    pickleName = os.path.basename(fName) + "_singleStranded_" + ss + "_contig_" + contig +".brf"
     f_exists = os.path.isfile(pickleName)
     if f_exists:
         f = open(pickleName, 'rb')
         snps = pickle.load(f)
         f.close()
-    else:
-        snps = parseSNPs(fName)
-        f = open(pickleName, 'wb')
-        pickle.dump(snps, f)
-        f.close()
+    # else:
+    #     snps = parseSNPs(fName, singleStranded=singleStranded)
+    #     f = open(pickleName, 'wb')
+    #     pickle.dump(snps, f)
+    #     f.close()
 
     return snps
 
 
-def createBypassBED(inName, chrms, snps):
-    snps = handleSNPs(snps)
-    s_chrms = set()
-
-    for i in range(2):
-        for snp in snps[i]:
-            chrm = snp.split()[0]
-            if chrm in chrms:
-                s_chrms.add(snp.split()[0])
-
+def createBypassBED(inName, chrms, snps, singleStranded):
+    s_chrms = distributeSNPs(snps, chrms, singleStranded)
 
     toBypass = set(chrms).difference(s_chrms)
     toFilter = s_chrms
@@ -263,7 +311,7 @@ def main(args=None):
     singleStranded = bool(int(sys.argv[6]))
 
 
-    snps = handleSNPs(snps)
+    snps = handleSNPs(snps, singleStranded, contig)
 
     ouName = contig + ".bam"
 
