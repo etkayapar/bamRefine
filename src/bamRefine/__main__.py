@@ -39,7 +39,7 @@ Consider reading the man page. You can do so by running the command: bamrefine_m
     if help:
         msg = helpmsg + msg
 
-    print(msg)
+    print(msg, file=sys.stderr)
     sys.exit()
 
 
@@ -159,20 +159,13 @@ def main(args=None):
         print("All options need arguments")
         usage()
 
-    if remainder[0].startswith('/'):
-        inName = remainder[0]
-    else:
-        inName = './'+remainder[0]
+    if len(remainder) < 2:
+        msg = "At least two positional arguments are needed: <in.bam> <out.bam>"
+        print(msg, file=sys.stderr)
+        usage()
 
-    if remainder[1].startswith('/'):
-        ouName = remainder[1]
-    else:
-        ouName = './'+remainder[1]
-
-    if snpF.startswith('/'):
-        pass
-    else:
-        snpF = './'+snpF
+    inName = remainder[0]
+    ouName = remainder[1]
 
     inName  = os.path.abspath(inName)
     ouName  = os.path.abspath(ouName)
