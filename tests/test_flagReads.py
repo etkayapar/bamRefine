@@ -7,7 +7,7 @@ os.chdir(dirN)
 
 
 snps = "random_reads.snp"
-snps = handleSNPs(snps)
+snps = parseSNPs(snps, False)
 lookup_l = 10
 lookup_r = 10
 
