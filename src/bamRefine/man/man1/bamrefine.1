@@ -2,14 +2,14 @@
 .SH NAME
 bamrefine \- Mask SNPs from a BAM file
 .SH SYNOPSIS
-\fB bamrefine \fP [OPTIONS][-vtkh] <in.bam> <out.bam>
+\fB bamrefine \fP [OPTIONS][-Svtkh] <in.bam> <out.bam>
 .SH DESCRIPTION
 \fBbamrefine\fP processes a BAM file to mask the positions from an
 alignment if that read carries a variant position that could be affected
 by post-mortem damage (PMD). e.g. If a read carries a C/* position at its
 5' end or it carries a G/* position at its 3' end. The regions treated as 5'
-or 3' "end" is not pre-defined and should be provided to the program with its
-argument (see \fB-l\fP)
+or 3' "ends" are not pre-defined and should be provided to the program with the
+corresponding option (see \fB-l\fP)
 .SS OPTIONS
 .TP
 \fB-s, --snps\fP
@@ -29,7 +29,12 @@ or
 \fBpip show bamrefine\fP
 .TP
 \fB-p, --threads\fP
-Number of threads to run the program in parallel.
+Number of threads to run the program in parallel. Parallelization is done by multiprocessing
+over the available contigs in the input BAM file, therefore the total number of threads that
+can be used effectively by the program has an upper limit. There is probably no real advantage
+in passing absurdly high numbers for this option for a single run, over simultaneously running
+the program with multiple different input files (e.g. independent invocations with xargs or
+similar) by using 4/8 threads per input file.
 .TP
 .TP
 \fB-l, --pmd-length-threshold\fP
@@ -40,6 +45,12 @@ will be evaluated and masked. There is no one-for-all default value that can be 
 so it is highly recommended that you have a prior information about the PMD profiles
 of your libraries before you run \fBbamrefine\fP
 .SS FLAGS
+.TP
+\fB-S, --single-stranded\fP
+Run the program in single-stranded mode. This flag should be turned on for BAM files that
+are generated from single-stranded libraries. When turned on, C/* variants are considered
+for overlapping read positions at both 5' and 3' ends. (Instead of using C/* for 5' ends
+and G/* for 3' ends)
 .TP
 \fB-v, --verbose\fP
 Verbose output of progress
