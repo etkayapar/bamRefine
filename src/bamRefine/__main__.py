@@ -23,6 +23,7 @@ OPTIONS:
         -p, --threads                 <INT> # of threads to use
         -l, --pmd-length-threshold    <INT|INT,INT> pmd length threshold
 FLAGS:
+        -S, --single-stranded         run the program in single-stranded mode
         -t, --add-tags                add maskings stats as optional SAM fields to the alignments
         -v, --verbose                 verbose output of progress
         -k, --keep-tmp                don't remove the temporary directory (.YYYY-MM-DD_HH-MM-SS_<out.bam>_tmp_bamrefine)
@@ -50,7 +51,7 @@ def waitJobs(runningJobs):
 def man(args=None):
     data_path = os.path.join(os.path.dirname(__file__), 'man', 'man1','bamrefine.1')
     os.system(f"man {data_path}")
-    
+
 
 def main(args=None):
     def parallelParse(jobL, n, lookup, env):
@@ -64,7 +65,7 @@ def main(args=None):
                 waitJobs(activeJobs)
                 return None
 
-            cmdList = ["bamrefine_proc", inName,c, lookup, snpF, str(int(addTags))]
+            cmdList = ["bamrefine_proc", inName,c, lookup, snpF, str(int(addTags)), str(int(singleStranded))]
             cmd = " ".join(cmdList)
             p = Popen([cmd], shell = True, env=env)
             activeJobs.append(p)
@@ -86,7 +87,7 @@ def main(args=None):
                     if len(jobL) == 0:
                         continue
                     c = jobL.pop()
-                    cmdList = ["bamrefine_proc", inName,c, lookup, snpF,str(int(addTags))]
+                    cmdList = ["bamrefine_proc", inName,c, lookup, snpF,str(int(addTags)), str(int(singleStranded))]
                     cmd = " ".join(cmdList)
                     p = Popen([cmd], shell = True, env=env)
                     if verbose:
@@ -95,7 +96,7 @@ def main(args=None):
                     jobN[i] = c
 
         waitJobs(activeJobs)
-    
+
     dirN = os.path.dirname(os.path.realpath(__file__))#dirname of the script
     # Processing command-line options for the program ------------------
 
@@ -106,6 +107,7 @@ def main(args=None):
     inName = None
     ouName = None
     lookup = None
+    singleStranded = False
     verbose = False
     snpF = None
     addTags = False
@@ -115,14 +117,15 @@ def main(args=None):
 
     try:
         options, remainder = getopt.gnu_getopt(sys.argv[1:],
-                                            's:p:l:tvhk',
-                                            ['snps=',
-                                            'threads=',
+                                            's:p:l:Stvhk',
+                                               ['snps=',
+                                                'threads=',
                                                 'pmd-length-threshold=',
+                                                'single-stranded',
                                                 'add-tags',
-                                            'verbose',
+                                                'verbose',
                                                 'help',
-                                            'keep-tmp'])
+                                                'keep-tmp'])
     except getopt.GetoptError as err:
         print(str(err))
         usage()
@@ -138,6 +141,8 @@ def main(args=None):
         elif opt in ('-l', '--pmd-length-threshold'):
             lookup = arg
             nOptions += 1
+        elif opt in ('-S', '--single-stranded'):
+            singleStranded = True
         elif opt in ('-t', '--add-tags'):
             addTags = True
         elif opt in ('-v', '--verbose'):
@@ -226,7 +231,7 @@ def main(args=None):
     print('\nStarted bam filtering\n')
     os.chdir(tmpname)
 
-    jobs, bypass = bamRefine.createBypassBED(inName, chrms, snpF)
+    jobs, bypass = bamRefine.createBypassBED(inName, chrms, snpF, singleStranded)
     jobs_c = jobs.copy()
 
     env = os.environ.copy()
