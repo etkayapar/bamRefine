@@ -137,6 +137,10 @@ This therefore means:
 
 ### Flags:
 
+  * `-S, --single-stranded`: Run the program in single-stranded mode. This flag should be 
+    turned on for BAM files that are generated from single-stranded libraries. When turned 
+    on, C/* variants are considered for overlapping read positions at both 5' and 3' ends.
+    (Instead of using C/* for 5' ends and G/* for 3' ends)
   * `-v, --verbose`: verbose output of progress.
   * `-t, --add-tags`: Add tags to reads in output BAM file related to masking statistics 
     using optional SAM fields in alignment records. e.g. `ZC:Z:2,1`  and `ZP:Z:0,5;-3` 
