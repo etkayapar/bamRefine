@@ -1,3 +1,16 @@
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
+**Table of Contents**
+
+- [bamrefine](#bamrefine)
+    - [Installation](#installation)
+        - [Via PyPI](#via-pypi)
+        - [From source](#from-source)
+    - [Masking strategy](#masking-strategy)
+    - [Usage](#usage)
+        - [Parameters:](#parameters)
+        - [Flags:](#flags)
+
+<!-- markdown-toc end -->
 # bamrefine
 
 [![PyPI version](https://badge.fury.io/py/bamrefine.svg)](https://badge.fury.io/py/bamrefine)
@@ -15,25 +28,58 @@ non-authentic (post mortem damage artifact) SNPs, or
 ignoring transition SNPs alltogether. Thus, avoiding a substantial amount
 of data loss that is encountered when using mainstream pipelines.
 
-## Install
+## Installation
+### Via PyPI
 
-The easiest way to `bamrefine` is from PyPI using `pip`:
+The easiest way to install `bamrefine` is from PyPI using `pip`. However, we recommend installing it inside a python virtual environment as opposed to installing it to your system or user level using your default python installation. 
+
+To do so, first create and activate your virtual environment:
+
+```
+python3 -m venv my_env
+source my_env/bin/activate
+```
+
+then install `bamrefine` inside the virtual environment from PyPI using `pip`:
 
 ```
 pip install bamrefine
 ```
 
-you can also install `bamrefine` from a local download:
+Upon installation of the package, the command `bamrefine` should be available to you.
 
-to do so, first download the latest release from the [github releases page](https://github.com/etkayapar/bamRefine/tags), and uncompress the downloaded archive. Once you have the source code downloaded, you can navigate into the folder and use pip to install from the copy you have downloaded:
+Don't forget to deactivate your virtual environment after you are done using this software:
 
 ```
-cd bamRefine-0.1.X
+deactivate
+```
+
+### From source
+
+You can also install `bamrefine` from a local download of this repository:
+
+to do so, first download the latest release (or the specific version you want to install) from the [github releases page](https://github.com/etkayapar/bamRefine/tags), and uncompress the downloaded archive. We recommend installing `bamrefine` into its own virtual environment.
+
+First create and activate your virtual environment:
+
+```
+python3 -m venv my_env
+source my_env/bin/activate
+```
+
+then install `bamrefine` inside the virtual environment from the source code using `pip`:
+```
+cd bamRefine-0.2.X
 pip install .
 ```
 
-
 Upon installation of the package, the command `bamrefine` should be available to you.
+
+Don't forget to deactivate your virtual environment after you are done using this software:
+
+```
+deactivate
+```
 
 ## Masking strategy
 
