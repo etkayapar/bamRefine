@@ -29,18 +29,26 @@ ignoring transition SNPs alltogether. Thus, avoiding a substantial amount
 of data loss that is encountered when using mainstream pipelines.
 
 ## Installation
-### Via PyPI
 
-The easiest way to install `bamrefine` is from PyPI using `pip`. However, we recommend installing it inside a python virtual environment[^1] as opposed to installing it to your system or user level using your default python installation. 
+Regardless of the installation method you choose below, we recommend installing `bamrefine` inside a Python virtual environment as opposed to installing it at the system or user level. Depending on your environment you may have to use this approach if you don't have the right permissions.
 
-To do so, first create and activate your virtual environment:
+We recommend you use the python module `venv` for this purpose, it is a part of The Python Standard Library thus should not require you to install it separately.
+
+First create and activate your `venv` virtual environment:
 
 ```
 python3 -m venv my_env
 source my_env/bin/activate
 ```
 
-then install `bamrefine` inside the virtual environment from PyPI using `pip`:
+after this step you may proceed with either one of the below installation methods.
+
+### Via PyPI
+
+The easiest way to install `bamrefine` is from PyPI using `pip`. 
+
+
+You can run the below line in your terminal to install `bamrefine` inside the virtual environment from PyPI using `pip`:
 
 ```
 pip install bamrefine
@@ -48,25 +56,11 @@ pip install bamrefine
 
 Upon installation of the package, the command `bamrefine` should be available to you.
 
-To deactivate your virtual environment after you are done using this software, type:
-
-```
-deactivate
-```
-
-
 ### From source
 
 You can also install `bamrefine` from a local download of this repository:
 
-to do so, first download the latest release (or the specific version you want to install) from the [github releases page](https://github.com/etkayapar/bamRefine/tags), and uncompress the downloaded archive. We recommend installing `bamrefine` into its own virtual environment[^1].
-
-First create and activate your virtual environment:
-
-```
-python3 -m venv my_env
-source my_env/bin/activate
-```
+to do so, first download the latest release (or the specific version you want to install) from the [github releases page](https://github.com/etkayapar/bamRefine/tags), and uncompress the downloaded archive.
 
 then install `bamrefine` inside the virtual environment from the source code using `pip`:
 ```
@@ -75,12 +69,6 @@ pip install .
 ```
 
 Upon installation of the package, the command `bamrefine` should be available to you.
-
-To deactivate your virtual environment after you are done using this software, type:
-
-```
-deactivate
-```
 
 ## Masking strategy
 
@@ -199,6 +187,4 @@ This therefore means:
     intermediate BAM files, cached SNPs, etc. this directory is under the same
     directory with specified ouptut BAM, named as `.YYYY-MM-DD_HH-MM-SS_<out.bam>_tmp_bamrefine`
 
- ----------------- 
 
-[^1]: The package `venv` should be available with a standard Python installation and do not need to be installed separately.
