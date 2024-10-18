@@ -30,9 +30,9 @@ of data loss that is encountered when using mainstream pipelines.
 
 ## Installation
 
-Regardless of the installation method you choose below, we recommend installing `bamrefine` inside a Python virtual environment as opposed to installing it at the system or user level. Depending on your environment you may have to use this approach if you don't have the right permissions.
+Regardless of the installation method you choose below, we recommend installing `bamrefine` inside a Python virtual environment as opposed to installing it at the system or user level. Depending on your environment you may actually have to use this approach if you don't have the right permissions.
 
-We recommend you use the python module `venv` for this purpose, it is a part of The Python Standard Library thus should not require you to install it separately.
+We recommend you use the python module `venv` for this purpose, it is a part of The Python Standard Library thus should not require you to install it separately. You can read more about how the module works from [here](https://docs.python.org/3/library/venv.html).
 
 First create and activate your `venv` virtual environment:
 
@@ -58,11 +58,12 @@ Upon installation of the package, the command `bamrefine` should be available to
 
 ### From source
 
-You can also install `bamrefine` from a local download of this repository:
+You can also install `bamrefine` from a local download of this repository.
 
-to do so, first download the latest release (or the specific version you want to install) from the [github releases page](https://github.com/etkayapar/bamRefine/tags), and uncompress the downloaded archive.
+To do so, first download the latest release (or the specific version you want to install) from the [github releases page](https://github.com/etkayapar/bamRefine/tags), and uncompress the downloaded archive.
 
-then install `bamrefine` inside the virtual environment from the source code using `pip`:
+Then, install `bamrefine` inside the virtual environment from the source code using `pip`:
+
 ```
 cd bamRefine-0.2.X
 pip install .
