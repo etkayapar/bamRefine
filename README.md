@@ -31,7 +31,7 @@ of data loss that is encountered when using mainstream pipelines.
 ## Installation
 ### Via PyPI
 
-The easiest way to install `bamrefine` is from PyPI using `pip`. However, we recommend installing it inside a python virtual environment as opposed to installing it to your system or user level using your default python installation. 
+The easiest way to install `bamrefine` is from PyPI using `pip`. However, we recommend installing it inside a python virtual environment[^1] as opposed to installing it to your system or user level using your default python installation. 
 
 To do so, first create and activate your virtual environment:
 
@@ -48,17 +48,18 @@ pip install bamrefine
 
 Upon installation of the package, the command `bamrefine` should be available to you.
 
-Don't forget to deactivate your virtual environment after you are done using this software:
+To deactivate your virtual environment after you are done using this software, type:
 
 ```
 deactivate
 ```
 
+
 ### From source
 
 You can also install `bamrefine` from a local download of this repository:
 
-to do so, first download the latest release (or the specific version you want to install) from the [github releases page](https://github.com/etkayapar/bamRefine/tags), and uncompress the downloaded archive. We recommend installing `bamrefine` into its own virtual environment.
+to do so, first download the latest release (or the specific version you want to install) from the [github releases page](https://github.com/etkayapar/bamRefine/tags), and uncompress the downloaded archive. We recommend installing `bamrefine` into its own virtual environment[^1].
 
 First create and activate your virtual environment:
 
@@ -75,7 +76,7 @@ pip install .
 
 Upon installation of the package, the command `bamrefine` should be available to you.
 
-Don't forget to deactivate your virtual environment after you are done using this software:
+To deactivate your virtual environment after you are done using this software, type:
 
 ```
 deactivate
@@ -198,4 +199,6 @@ This therefore means:
     intermediate BAM files, cached SNPs, etc. this directory is under the same
     directory with specified ouptut BAM, named as `.YYYY-MM-DD_HH-MM-SS_<out.bam>_tmp_bamrefine`
 
-  
+ ----------------- 
+
+[^1]: The package `venv` should be available with a standard Python installation and do not need to be installed separately.
