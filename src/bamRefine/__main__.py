@@ -27,7 +27,8 @@ FLAGS:
         -t, --add-tags                add maskings stats as optional SAM fields to the alignments
         -v, --verbose                 verbose output of progress
         -k, --keep-tmp                don't remove the temporary directory (.YYYY-MM-DD_HH-MM-SS_<out.bam>_tmp_bamrefine)
-        -h, --help                    display this message end exit
+        -h, --help                    display this message and exit
+        --version                     display version information and exit
 
 
     '''
