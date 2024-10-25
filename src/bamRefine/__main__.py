@@ -40,7 +40,7 @@ Consider reading the man page. You can do so by running the command: bamrefine_m
         msg = helpmsg + msg
 
     print(msg, file=sys.stderr)
-    sys.exit()
+    exit(1)
 
 
 def waitJobs(runningJobs):
@@ -125,9 +125,10 @@ def main(args=None):
                                                 'add-tags',
                                                 'verbose',
                                                 'help',
-                                                'keep-tmp'])
+                                                'keep-tmp',
+                                                'version'])
     except getopt.GetoptError as err:
-        print(str(err))
+        print(str(err), file=sys.stderr)
         usage()
 
 
@@ -151,12 +152,15 @@ def main(args=None):
             keeptmp = True
         elif opt in ('-h', '--help'):
             usage(help=True)
+        elif opt in ('--version'):
+            print(bamRefine.version("bamrefine"))
+            exit()
         else:
             usage()
 
 
     if nOptions != 3:
-        print("All options need arguments")
+        print("All options need arguments", file=sys.stderr)
         usage()
 
     if len(remainder) < 2:
@@ -187,7 +191,7 @@ def main(args=None):
     if os.path.isfile(ouName):
         msg = f"Output file {ouName} already exists. Either choose a different output name for this run or remove/rename the old output bam and the stats files."
         print(msg, file=sys.stderr)
-        exit()
+        exit(1)
 
     if os.path.isfile(inName+".bai"):
         print("Fetching Chromosomes")
@@ -208,7 +212,7 @@ def main(args=None):
     Can't find input BAM in the specified path.
         '''
         print(msg, file=sys.stderr)
-        exit()
+        exit(1)
 
     ## Create a tmp directory
     try:
