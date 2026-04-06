@@ -4,6 +4,7 @@ import pickle
 import sys
 import subprocess as sp
 from importlib.metadata import version
+from collections import defaultdict
 
 def isDangerous(var):
     if ("C" in var) and ("G" in var):
@@ -225,7 +226,7 @@ def distributeSNPs(fName, chrms, singleStranded):
     # curC = 'chr1'
     # chrm = 'chr1'
     # snps = [{}, {}]
-    snps = {chrm: [{}, {}] for chrm in chrms}
+    snps = defaultdict(lambda: [{}, {}])
 
     chrI, posI, refI, altI = detectSNPfileFormat(fName)
 
